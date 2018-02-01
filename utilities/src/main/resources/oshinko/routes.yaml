@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: Template
+metadata:
+  name: oshinko-web-proxy-route
+objects:
+  - apiVersion: v1
+    kind: Route
+    metadata:
+      name: oshinko-web-proxy
+      namespace: ${NAMESPACE}
+      labels:
+        app: oshinko-webui
+        name: oshinko-web-proxy
+    spec:
+      host: oshinko-web-${NAMESPACE}.${HOST_IP}${ROUTE_SUFFIX}
+      path: /proxy
+      to:
+        kind: Service
+        name: oshinko-web-proxy
+        weight: 100
+      port:
+        targetPort: oc-proxy-port
+      wildcardPolicy: None
+
+parameters:
+  - name: HOST_IP
+    required: true
+  - name: NAMESPACE
+    required: true
+  - name: ROUTE_SUFFIX
+    required: true

@@ -1,9 +1,9 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+				 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
-		<groupId>com.redhat</groupId>
+		<groupId>io.radanalytics.tests</groupId>
 		<artifactId>xpaas</artifactId>
 		<version>3.1.0-SNAPSHOT</version>
 	</parent>
@@ -17,13 +17,13 @@
 	</properties>
 
 	<dependencies>
-        <dependency>
-            <groupId>com.redhat.xpaas</groupId>
-            <artifactId>utilities</artifactId>
-            <version>${project.version}</version>
-        </dependency>
+		<dependency>
+			<groupId>com.redhat.xpaas</groupId>
+			<artifactId>utilities</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 
-        <dependency>
+		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 		</dependency>
@@ -61,9 +61,9 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <test>${test}</test>
-                </configuration>
+				<configuration>
+					<test>${test}</test>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>
