@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: artemis
+spec:
+  replicas: 1
+  selector:
+    name: artemis
+  template:
+    metadata:
+      labels:
+        name: artemis
+    spec:
+      containers:
+        - name: artemis
+          image: "redhatiot/artemis:latest"
+          ports:
+            - containerPort: 5672
+          command:
+            - /opt/apache-artemis-1.4.0/bin/run_artemis.sh
+          volumeMounts:
+            - name: vol-instance
+              mountPath: "/var/run/artemis"
+          env:
+            - name: QUEUE_NAME
+              value: "temperature"
+      volumes:
+        - emptyDir: {}
+          name: vol-instance
+

@@ -1,0 +1,679 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.redhat</groupId>
+    <artifactId>xpaas</artifactId>
+    <version>3.1.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+    <name>radtests</name>
+
+    <modules>
+        <module>utilities</module>
+    </modules>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <brokerIP>10.8.63.248</brokerIP>
+        <soakTestIterations>42</soakTestIterations>
+
+        <fabric8.version>2.2.0.redhat-079</fabric8.version>
+        <fuse.build.version>187</fuse.build.version>
+        <fuse.bom.version>6.3.0.redhat-${fuse.build.version}</fuse.bom.version>
+        <version.jboss.bom.eap>6.4.0.GA</version.jboss.bom.eap>
+        <version.org.slf4j>1.7.12</version.org.slf4j>
+        <version.org.apache.qpid>0.30</version.org.apache.qpid>
+        <version.org.kie>6.5.0.Final-redhat-7</version.org.kie>
+        <!--<version.selenium>3.7.0</version.selenium>-->
+        <version.selenium>2.52.0</version.selenium>
+        <version.com.fasterxml.jackson>2.7.2</version.com.fasterxml.jackson>
+        <version.io.fabric8.openshift-client>3.1.0</version.io.fabric8.openshift-client>
+        <version.org.jboss.arquillian>1.1.11.Final</version.org.jboss.arquillian>
+        <version.org.jboss.arquillian.governor>1.0.2.Final</version.org.jboss.arquillian.governor>
+        <version.org.jboss.teiid>8.13.4</version.org.jboss.teiid>
+        <version.org.apache.olingo>4.2.0</version.org.apache.olingo>
+        <version.org.postgresql>9.4-1206-jdbc42</version.org.postgresql>
+        <version.mysql>5.1.26</version.mysql>
+        <version.org.apache.derby>10.12.1.1</version.org.apache.derby>
+        <version.org.keycloak>2.5.5.Final</version.org.keycloak>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- Project versions -->
+            <dependency>
+                <groupId>com.redhat.xpaas</groupId>
+                <artifactId>utilities</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.redhat.xpaas</groupId>
+                <artifactId>test-common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <!-- Utilities dependencies -->
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>${version.org.slf4j}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.fabric8</groupId>
+                <artifactId>openshift-client</artifactId>
+                <version>${version.io.fabric8.openshift-client}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.fabric8</groupId>
+                <artifactId>kubernetes-client</artifactId>
+                <version>${version.io.fabric8.openshift-client}</version>
+            </dependency>
+
+            <dependency>
+                <!-- FIXME: REDHAT VERSION CURRENTLY NOT WORKING -->
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpclient</artifactId>
+                <version>4.3.6</version>
+            </dependency>
+
+            <dependency>
+                <!-- FIXME: REDHAT VERSION CURRENTLY NOT WORKING -->
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpcore</artifactId>
+                <version>4.3.3</version>
+            </dependency>
+
+            <dependency>
+                <!-- FIXME: REDHAT VERSION CURRENTLY NOT WORKING -->
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-lang3</artifactId>
+                <version>3.4</version>
+            </dependency>
+
+            <dependency>
+                <!-- FIXME: REDHAT VERSION CURRENTLY NOT WORKING -->
+                <!-- FIXME currently using same version as EAP6 to avoid dependency hell -->
+                <groupId>commons-io</groupId>
+                <artifactId>commons-io</artifactId>
+                <version>2.4</version>
+            </dependency>
+
+            <!-- Simplified reflection: https://github.com/ronmamo/reflections -->
+            <dependency>
+                <groupId>org.reflections</groupId>
+                <artifactId>reflections</artifactId>
+                <version>0.9.10</version>
+            </dependency>
+
+            <dependency>
+                <groupId>javax.jms</groupId>
+                <artifactId>jms-api</artifactId>
+                <version>1.1-rev-1</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.jcraft</groupId>
+                <artifactId>jsch</artifactId>
+                <version>0.1.53</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.gitlab</groupId>
+                <artifactId>java-gitlab-api</artifactId>
+                <version>1.2.4</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-annotations</artifactId>
+                <version>${version.com.fasterxml.jackson}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-core</artifactId>
+                <version>${version.com.fasterxml.jackson}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
+                <version>${version.com.fasterxml.jackson}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.fasterxml.jackson.dataformat</groupId>
+                <artifactId>jackson-dataformat-yaml</artifactId>
+                <version>${version.com.fasterxml.jackson}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.fasterxml.jackson.jaxrs</groupId>
+                <artifactId>jackson-jaxrs-base</artifactId>
+                <version>${version.com.fasterxml.jackson}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.fasterxml.jackson.jaxrs</groupId>
+                <artifactId>jackson-jaxrs-json-provider</artifactId>
+                <version>${version.com.fasterxml.jackson}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.fasterxml.jackson.module</groupId>
+                <artifactId>jackson-module-jaxb-annotations</artifactId>
+                <version>${version.com.fasterxml.jackson}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.eclipse.jgit</groupId>
+                <artifactId>org.eclipse.jgit</artifactId>
+                <version>4.1.0.201509280440-r</version>
+            </dependency>
+
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>4.12</version>
+            </dependency>
+            <dependency>
+                <groupId>com.tngtech.java</groupId>
+                <artifactId>junit-dataprovider</artifactId>
+                <version>1.10.0</version>
+            </dependency>
+
+            <!-- mocking framework for unit test: http://site.mockito.org -->
+            <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-core</artifactId>
+                <version>1.10.19</version>
+            </dependency>
+            <!-- mocking framework for static members: https://github.com/jayway/powermock -->
+            <dependency>
+                <groupId>org.powermock</groupId>
+                <artifactId>powermock-module-junit4</artifactId>
+                <version>1.6.5</version>
+            </dependency>
+            <dependency>
+                <groupId>org.powermock</groupId>
+                <artifactId>powermock-api-mockito</artifactId>
+                <version>1.6.5</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.bouncycastle</groupId>
+                <artifactId>bcpkix-jdk15on</artifactId>
+                <version>1.52</version>
+            </dependency>
+
+            <!-- Logging versions -->
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>log4j-over-slf4j</artifactId>
+                <version>${version.org.slf4j}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-jdk14</artifactId>
+                <version>${version.org.slf4j}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-to-slf4j</artifactId>
+                <version>2.3</version>
+            </dependency>
+
+            <dependency>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-classic</artifactId>
+                <version>1.1.3</version>
+            </dependency>
+
+            <dependency>
+              <groupId>org.fluentd</groupId>
+              <artifactId>fluent-logger</artifactId>
+              <version>0.3.1</version>
+            </dependency>
+            <dependency>
+              <groupId>com.sndyuk</groupId>
+              <artifactId>logback-more-appenders</artifactId>
+              <version>1.4.2</version>
+            </dependency>
+
+            <!-- Test dependency versions -->
+            <dependency>
+                <groupId>org.jboss</groupId>
+                <artifactId>jboss-dmr</artifactId>
+                <version>1.3.0.Final</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-bundle</artifactId>
+                <version>2.7.13</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.glassfish</groupId>
+                <artifactId>javax.json</artifactId>
+                <version>1.0.4</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.maven.shared</groupId>
+                <artifactId>maven-verifier</artifactId>
+                <version>1.5</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.seleniumhq.selenium</groupId>
+                <artifactId>selenium-java</artifactId>
+                <version>${version.selenium}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.seleniumhq.selenium</groupId>
+                <artifactId>selenium-remote-driver</artifactId>
+                <version>${version.selenium}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.seleniumhq.selenium</groupId>
+                <artifactId>selenium-support</artifactId>
+                <version>${version.selenium}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.seleniumhq.selenium</groupId>
+                <artifactId>selenium-api</artifactId>
+                <version>${version.selenium}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jgroups</groupId>
+                <artifactId>jgroups</artifactId>
+                <version>3.4.5.Final</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>18.0</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.qpid</groupId>
+                <artifactId>qpid-amqp-1-0-client-jms</artifactId>
+                <version>0.30</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.fusesource.mqtt-client</groupId>
+                <artifactId>mqtt-client</artifactId>
+                <version>1.12</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.yaml</groupId>
+                <artifactId>snakeyaml</artifactId>
+                <version>1.16</version>
+            </dependency>
+
+            <dependency>
+                <groupId>xom</groupId>
+                <artifactId>xom</artifactId>
+                <version>1.2.5</version>
+            </dependency>
+
+            <!-- Needed for HtmlUnitDriver -->
+            <dependency>
+                <groupId>xml-apis</groupId>
+                <artifactId>xml-apis</artifactId>
+                <version>1.4.01</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.qa.tools</groupId>
+                <artifactId>charts</artifactId>
+                <version>1.0</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>bouncycastle</groupId>
+                        <artifactId>bcmail-jdk14</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>bouncycastle</groupId>
+                        <artifactId>bcprov-jdk14</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.perfcake</groupId>
+                <artifactId>perfcake</artifactId>
+                <version>7.3</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.logging.log4j</groupId>
+                        <artifactId>log4j-core</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.apache.logging.log4j</groupId>
+                        <artifactId>log4j-1.2-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-log4j12</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.assertj</groupId>
+                <artifactId>assertj-core</artifactId>
+                <version>3.5.2</version>
+            </dependency>
+
+            <dependency>
+                <groupId>javax.websocket</groupId>
+                <artifactId>javax.websocket-api</artifactId>
+                <version>1.1</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.glassfish.tyrus.bundles</groupId>
+                <artifactId>tyrus-standalone-client-jdk</artifactId>
+                <version>1.10</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.sun.xml.bind</groupId>
+                <artifactId>jaxb-impl</artifactId>
+                <version>2.2.11</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.sun.xml.bind</groupId>
+                <artifactId>jaxb-core</artifactId>
+                <version>2.2.11</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.archiva</groupId>
+                <artifactId>archiva-rest-api</artifactId>
+                <version>2.2.0</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.pacesys</groupId>
+                <artifactId>openstack4j</artifactId>
+                <version>2.0.9</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.reactivex</groupId>
+                <artifactId>rxjava-string</artifactId>
+                <version>1.1.1</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.reactivex</groupId>
+                <artifactId>rxjava</artifactId>
+                <version>1.3.0</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.keycloak</groupId>
+                <artifactId>keycloak-admin-client</artifactId>
+                <version>${version.org.keycloak}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.keycloak</groupId>
+                <artifactId>keycloak-core</artifactId>
+                <version>${version.org.keycloak}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.resteasy</groupId>
+                <artifactId>resteasy-client</artifactId>
+                <version>3.0.14.Final</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.resteasy</groupId>
+                <artifactId>resteasy-multipart-provider</artifactId>
+                <version>3.0.14.Final</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.resteasy</groupId>
+                <artifactId>resteasy-jackson2-provider</artifactId>
+                <version>3.0.14.Final</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.spec.javax.ws.rs</groupId>
+                <artifactId>jboss-jaxrs-api_2.0_spec</artifactId>
+                <version>1.0.0.Final</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.arquillian</groupId>
+                <artifactId>arquillian-bom</artifactId>
+                <version>${version.org.jboss.arquillian}</version>
+                <scope>import</scope>
+                <type>pom</type>
+            </dependency>
+            <dependency>
+                <groupId>org.arquillian.extension</groupId>
+                <artifactId>arquillian-governor-jira</artifactId>
+                <version>${version.org.jboss.arquillian.governor}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.teiid</groupId>
+                <artifactId>teiid-client</artifactId>
+                <version>${version.org.jboss.teiid}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.olingo</groupId>
+                <artifactId>odata-client-api</artifactId>
+                <version>${version.org.apache.olingo}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.olingo</groupId>
+                <artifactId>odata-client-core</artifactId>
+                <version>${version.org.apache.olingo}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.olingo</groupId>
+                <artifactId>odata-commons-api</artifactId>
+                <version>${version.org.apache.olingo}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.olingo</groupId>
+                <artifactId>odata-commons-core</artifactId>
+                <version>${version.org.apache.olingo}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.postgresql</groupId>
+                <artifactId>postgresql</artifactId>
+                <version>${version.org.postgresql}</version>
+            </dependency>
+            <dependency>
+                <groupId>mysql</groupId>
+                <artifactId>mysql-connector-java</artifactId>
+                <version>${version.mysql}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>1.16.10</version>
+                <scope>provided</scope>
+            </dependency>
+
+
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.2</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>2.18.1</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-clean-plugin</artifactId>
+                    <version>2.6.1</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-checkstyle-plugin</artifactId>
+                    <version>2.17</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-clean-plugin</artifactId>
+                <configuration>
+                    <filesets>
+                        <fileset>
+                            <directory>log</directory>
+                            <includes>
+                                <include>**</include>
+                            </includes>
+                        </fileset>
+                        <fileset>
+                            <directory>tmp</directory>
+                            <includes>
+                                <include>**</include>
+                            </includes>
+                        </fileset>
+                    </filesets>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <configuration>
+                    <configLocation>checkstyle.xml</configLocation>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+
+        <profile>
+            <id>test-all</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <modules>
+                <module>test-ophicleide</module>
+                <module>test-jgrafzahl</module>
+                <module>test-tensorflow-mnist</module>
+                <module>test-amqp</module>
+                <module>test-valueatrisk</module>
+                <module>test-pysparkhdfs</module>
+                <module>test-cephsource</module>
+                <module>test-s3source</module>
+                <module>test-blockchainanalysis</module>
+            </modules>
+        </profile>
+
+        <profile>
+            <id>test-ophicleide</id>
+            <modules>
+                <module>test-ophicleide</module>
+            </modules>
+        </profile>
+
+        <profile>
+            <id>test-valueatrisk</id>
+            <modules>
+                <module>test-valueatrisk</module>
+            </modules>
+        </profile>
+
+        <profile>
+            <id>test-jgrafzahl</id>
+            <modules>
+                <module>test-jgrafzahl</module>
+            </modules>
+        </profile>
+
+        <profile>
+            <id>test-tensorflow-mnist</id>
+            <modules>
+                <module>test-tensorflow-mnist</module>
+            </modules>
+        </profile>
+
+        <profile>
+            <id>test-amqp</id>
+            <modules>
+                <module>test-amqp</module>
+            </modules>
+        </profile>
+
+        <profile>
+            <id>test-pysparkhdfs</id>
+            <modules>
+                <module>test-pysparkhdfs</module>
+            </modules>
+        </profile>
+
+        <profile>
+            <id>test-cephsource</id>
+            <modules>
+                <module>test-cephsource</module>
+            </modules>
+        </profile>
+
+        <profile>
+            <id>test-s3source</id>
+            <modules>
+                <module>test-s3source</module>
+            </modules>
+        </profile>
+
+        <profile>
+            <id>test-blockchainanalysis</id>
+            <modules>
+                <module>test-blockchainanalysis</module>
+            </modules>
+        </profile>
+
+    </profiles>
+
+</project>

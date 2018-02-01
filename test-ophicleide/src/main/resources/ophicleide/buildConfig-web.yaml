@@ -1,0 +1,19 @@
+kind: BuildConfig
+apiVersion: v1
+metadata:
+  name: ophicleide-web
+spec:
+  source:
+    type: Git
+    git:
+      uri: https://github.com/ophicleide/ophicleide-web
+  strategy:
+    type: Source
+    sourceStrategy:
+      from:
+        kind: DockerImage
+        name: centos/nodejs-4-centos7:latest
+  output:
+    to:
+      kind: ImageStreamTag
+      name: ophicleide-web:latest

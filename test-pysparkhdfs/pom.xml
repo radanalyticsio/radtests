@@ -1,0 +1,66 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>com.redhat</groupId>
+		<artifactId>xpaas</artifactId>
+		<version>3.1.0-SNAPSHOT</version>
+	</parent>
+
+	<groupId>com.redhat.xpaas</groupId>
+	<artifactId>test-pysparkhdfs</artifactId>
+	<name>xPaaS Test Suite :: RAD test suite</name>
+
+	<properties>
+		<test>com.redhat.xpaas.WebUITest</test>
+	</properties>
+
+	<dependencies>
+
+		<dependency>
+				<groupId>com.redhat.xpaas</groupId>
+				<artifactId>utilities</artifactId>
+				<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+	<groupId>junit</groupId>
+	<artifactId>junit</artifactId>
+</dependency>
+
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.seleniumhq.selenium</groupId>
+			<artifactId>selenium-java</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.seleniumhq.selenium</groupId>
+			<artifactId>selenium-remote-driver</artifactId>
+		</dependency>
+
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <test>${test}</test>
+                </configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>
