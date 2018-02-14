@@ -1,0 +1,133 @@
+apiVersion: v1
+kind: Template
+metadata:
+  name: word-fountain
+objects:
+  - apiVersion: v1
+    kind: ImageStream
+    metadata:
+      name: word-fountain
+      labels:
+        app: word-fountain
+      annotations:
+        openshift.io/generated-by: OpenShiftNewApp
+
+  - apiVersion: v1
+    kind: ImageStream
+    metadata:
+      generation: 2
+      labels:
+        app: word-fountain
+      name: python-27-centos7
+    spec:
+      lookupPolicy:
+        local: false
+      tags:
+        - annotations:
+            openshift.io/imported-from: openshift/python-27-centos7
+          from:
+            kind: DockerImage
+            name: openshift/python-27-centos7
+          generation: 2
+          importPolicy: {}
+          name: latest
+          referencePolicy:
+            type: Source
+
+  - apiVersion: v1
+    kind: BuildConfig
+    metadata:
+      name: word-fountain
+      selfLink: /oapi/v1/namespaces/ophicleide/buildconfigs/word-fountain
+      labels:
+        app: word-fountain
+    spec:
+      runPolicy: Serial
+      source:
+        type: Git
+        git:
+          uri: https://github.com/mattf/word-fountain
+      strategy:
+        type: Source
+        sourceStrategy:
+          from:
+            kind: ImageStreamTag
+            name: python-27-centos7:latest
+      output:
+        to:
+          kind: ImageStreamTag
+          name: word-fountain:latest
+      triggers:
+        - github:
+            secret: dhKvNUAm147uDrWB0VPP
+          type: GitHub
+        - generic:
+            secret: i3rDbetKaW0F35w-_WSu
+          type: Generic
+        - type: ConfigChange
+        - imageChange:
+            lastTriggeredImageID: >-
+              openshift/python-27-centos7@sha256:dc5e884c8f5f0a836f06fc8104131c4a013a9ea9dbac002d4121fdd5e353fe03
+          type: ImageChange
+
+  - apiVersion: v1
+    kind: DeploymentConfig
+    metadata:
+      name: word-fountain
+      labels:
+        app: word-fountain
+    spec:
+      strategy:
+        type: Rolling
+        rollingParams:
+          updatePeriodSeconds: 1
+          intervalSeconds: 1
+          timeoutSeconds: 600
+          maxUnavailable: 25%
+          maxSurge: 25%
+        resources: {}
+        activeDeadlineSeconds: 21600
+      triggers:
+        - type: ConfigChange
+        - type: ImageChange
+          imageChangeParams:
+            automatic: true
+            containerNames:
+              - word-fountain
+            from:
+              kind: ImageStreamTag
+              namespace: ${PROJECT_NAME}
+              name: 'word-fountain:latest'
+      replicas: 1
+      test: false
+      selector:
+        app: word-fountain
+        deploymentconfig: word-fountain
+      template:
+        metadata:
+          creationTimestamp: null
+          labels:
+            app: word-fountain
+            deploymentconfig: word-fountain
+          annotations:
+            openshift.io/generated-by: OpenShiftNewApp
+        spec:
+          containers:
+            - name: word-fountain
+              image: 'word-fountain:latest'
+              ports:
+                - containerPort: 8080
+                  protocol: TCP
+              env:
+                - name: SERVERS
+                  value: 'apache-kafka:9092'
+              resources: {}
+              terminationMessagePath: /dev/termination-log
+              imagePullPolicy: Always
+          restartPolicy: Always
+          terminationGracePeriodSeconds: 30
+          dnsPolicy: ClusterFirst
+          securityContext: {}
+parameters:
+- name: PROJECT_NAME
+  required: true

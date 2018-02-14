@@ -1,7 +1,5 @@
 package com.redhat.xpaas.oshinko.api;
 
-import com.redhat.xpaas.oshinko.api.entity.SparkCluster;
-import com.redhat.xpaas.oshinko.api.entity.SparkPod;
 import com.redhat.xpaas.RadConfiguration;
 import com.redhat.xpaas.util.TestUtil;
 import com.redhat.xpaas.wait.WaitUtil;
@@ -11,9 +9,6 @@ import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebDriver;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.TimeoutException;
 import java.util.function.BooleanSupplier;
 
@@ -73,64 +68,6 @@ public class OshinkoWebUI implements OshinkoAPI {
     webDriver.findElement(createButton).click();
 
     return true;
-  }
-
-  @Override
-  public SparkCluster getCluster(String clusterName) {
-    String url = "http://" + hostname + "/#/clusters/" + clusterName;
-
-    webDriver.navigate().to(url);
-
-    By nonExistingCluster = By.xpath("//div[@class='well blank-slate-pf spacious ng-scope']/h3");
-    if (webDriver.findElements(nonExistingCluster).size() > 0) {
-      return null;
-    }
-
-    By name = By.xpath("//dl[@class='dl-horizontal']/dt[. = 'Name']/following-sibling::dd");
-    By status = By.xpath("//dl[@class='dl-horizontal']/dt[. = 'Status']/following-sibling::dd");
-    By master = By.xpath("//dl[@class='dl-horizontal']/dt[. = 'Master']/following-sibling::dd");
-    By workerCount = By.xpath("//dl[@class='dl-horizontal']/dt[. = 'Worker count']/following-sibling::dd");
-    By podsTable = By.xpath("//tbody[@class='ng-scope']");
-
-    SparkCluster cluster = new SparkCluster();
-
-    cluster.setClusterName(webDriver.findElement(name).getText());
-    cluster.setStatus(webDriver.findElement(status).getText());
-    cluster.setMasterUrl(webDriver.findElement(master).getText());
-    cluster.setWorkersCount(Integer.parseInt(webDriver.findElement(workerCount).getText()));
-
-    List<SparkPod> sparkPods = new ArrayList<>();
-
-    webDriver.findElements(podsTable).forEach( x -> {
-      String[] splittedRow = x.getText().split("\\n");
-      SparkPod pod = new SparkPod();
-
-      pod.setIp(splittedRow[0]);
-      pod.setType(splittedRow[1]);
-      // TODO here should be status, however its not showed up in podded web ui
-
-      sparkPods.add(pod);
-    });
-    cluster.setSparkPods(sparkPods);
-    cluster.setMastersCount(((int) sparkPods.stream().filter(x -> x.getType().equals("master")).count()));
-
-    return cluster;
-  }
-
-  @Override
-  public List<SparkCluster> listClusters() {
-    String url = "http://" + hostname + "/#/clusters";
-
-    By clustersTable = By.xpath("//tbody[@class='ng-scope']");
-    List<String> clusterNames = new ArrayList<>();
-
-    webDriver.navigate().to(url);
-    webDriver.findElements(clustersTable).forEach( x -> clusterNames.add(x.getText().split(" ")[0]));
-
-    List<SparkCluster> clusters = new ArrayList<>();
-    clusterNames.forEach( name -> clusters.add(getCluster(name)));
-
-    return clusters;
   }
 
   @Override

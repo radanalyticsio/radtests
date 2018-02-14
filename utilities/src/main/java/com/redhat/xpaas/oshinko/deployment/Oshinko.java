@@ -1,29 +1,22 @@
 package com.redhat.xpaas.oshinko.deployment;
 
+import com.redhat.xpaas.logger.Loggable;
+import com.redhat.xpaas.logger.LoggerUtil;
 import com.redhat.xpaas.openshift.OpenshiftUtil;
 import com.redhat.xpaas.oshinko.api.OshinkoWebUI;
 import com.redhat.xpaas.RadConfiguration;
 import com.redhat.xpaas.wait.WaitUtil;
 import io.fabric8.kubernetes.api.model.*;
-import io.fabric8.openshift.api.model.RouteBuilder;
-import io.fabric8.openshift.api.model.RoutePort;
 import io.fabric8.openshift.api.model.Template;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.net.InetAddress;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
 import java.util.function.BooleanSupplier;
 import java.util.function.Predicate;
 
+@Loggable(project = "oshinko")
 public class Oshinko {
-  private static final Logger log = LoggerFactory.getLogger(Oshinko.class);
-
   private static final OpenshiftUtil openshift = OpenshiftUtil.getInstance();
   private static final String APP_NAME = RadConfiguration.oshinkoAppName();
   private static final String NAMESPACE = RadConfiguration.masterNamespace();
@@ -44,11 +37,8 @@ public class Oshinko {
   /**
    * Will deploy webUI pod for Oshinko and waits till ready to handle requests.
    */
-  public static OshinkoWebUI deployWebUIPod() {
-    log.info("action=loading-oshinko-resources status=START");
+  public static OshinkoWebUI deployWebUIPod() throws TimeoutException, InterruptedException {
     createServiceAccount("edit");
-    log.info("action=loading-oshinko-resources status=FINISH");
-    log.info("action=deploying-oshinko status=START");
     loadWebUIResources();
 
     try {
@@ -57,14 +47,34 @@ public class Oshinko {
       throw new IllegalStateException("Timeout expired while waiting for Oshinko server availability.");
     }
 
-    log.info("action=oshinko-waiting-for-route-exposure status=START");
     WaitUtil.waitForRoute("oshinko-web", 10000L);
     WaitUtil.waitForRoute("oshinko-web-proxy", 10000L);
-    log.info("action=oshinko-waiting-for-route-exposure status=START");
 
-
-    log.info("action=deploying-oshinko status=FINISH");
     return OshinkoWebUI.getInstance(openshift.appDefaultHostNameBuilder("oshinko-web"));
+  }
+
+  public static void deploySparkFromResource() throws TimeoutException, InterruptedException {
+    String sparkResource = "/oshinko/spark-metrics-template.yaml";
+
+    Template template = openshift.withAdminUser(client ->
+      client.templates().inNamespace(NAMESPACE).load(Oshinko.class.getResourceAsStream(sparkResource)).createOrReplace()
+    );
+
+    Map<String, String> parameters = new HashMap<>();
+    parameters.put("MASTER_NAME", "spark-m");
+    parameters.put("WORKER_NAME", "spark-w");
+
+    openshift.loadTemplate(template, parameters);
+
+    boolean succeeded = WaitUtil.waitForPodsToReachRunningState("name", "spark-m", 1);
+    if(!succeeded){
+      throw new IllegalStateException(LoggerUtil.openshiftError("spark-m deployment", "pod"));
+    }
+
+    succeeded = WaitUtil.waitForPodsToReachRunningState("name", "spark-w", 2);
+    if(!succeeded){
+      throw new IllegalStateException(LoggerUtil.openshiftError("spark-w deployment", "pod"));
+    }
   }
 
   public static void buildRoute(){
@@ -158,15 +168,11 @@ public class Oshinko {
     openshift.loadTemplate(PySpark, parameters);
   }
 
-  public static void waitForClustersSetup(){
+  public static void waitForClustersSetup() throws TimeoutException, InterruptedException {
     String masterName = CLUSTER_NAME + "-m";
     String workerName = CLUSTER_NAME + "-w";
-    try {
-      WaitUtil.waitFor(_areNClusterPodsReady(masterName, 1));
-      WaitUtil.waitFor(_areNClusterPodsReady(workerName, WORKERS_COUNT));
-    } catch (InterruptedException | TimeoutException e) {
-      throw new IllegalStateException("Timeout expired while waiting for cluster/mongoDB pods or  availability");
-    }
+    WaitUtil.waitFor(_areNClusterPodsReady(masterName, 1));
+    WaitUtil.waitFor(_areNClusterPodsReady(workerName, WORKERS_COUNT));
   }
 
   private static BooleanSupplier _areNClusterPodsReady(String name, int n){

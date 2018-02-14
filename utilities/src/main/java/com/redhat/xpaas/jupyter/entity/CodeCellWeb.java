@@ -1,6 +1,5 @@
 package com.redhat.xpaas.jupyter.entity;
 
-import com.redhat.xpaas.util.TestUtil;
 import com.redhat.xpaas.wait.WaitUtil;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -158,4 +157,5 @@ public class CodeCellWeb implements CodeCell {
 
     return true;
   }
+
 }

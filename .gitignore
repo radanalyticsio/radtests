@@ -1,0 +1,39 @@
+#iml files
+test-ophicleide/test-ophicleide.iml
+test-amqp/test-amqp.iml
+test-valueatrisk/test-valueatrisk.iml
+test-jgrafzahl/test-jgrafzahl.iml
+test-tensorflow-mnist/test-tensorflow-mnist.iml
+test-pysparkhdfs/test-pysparkhdfs.iml
+test-s3source/test-s3source.iml
+test-blockchainanalysis/test-blockchainanalysis.iml
+test-cephsource/test-cephsource.iml
+
+utilities/utilities.iml
+xpaas.iml
+
+# target files
+test-ophicleide/target
+utilities/target
+test-jgrafzahl/target
+test-tensorflow-mnist/target
+test-amqp/target
+test-valueatrisk/target
+test-pysparkhdfs/target
+test-s3source/target
+test-blockchainanalysis/target
+test-cephsource/target
+
+# logs
+test-ophicleide/log
+test-jgrafzahl/log
+test-tensorflow-mnist/log
+test-amqp/log
+test-valueatrisk/log
+test-pysparkhdfs/log
+test-s3source/log
+test-blockchainanalysis/log
+test-cephsource/log
+
+# intellij folder
+.idea/

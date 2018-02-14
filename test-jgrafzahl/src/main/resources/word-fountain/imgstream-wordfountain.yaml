@@ -1,8 +1,0 @@
-apiVersion: v1
-kind: ImageStream
-metadata:
-  name: word-fountain
-  labels:
-    app: word-fountain
-  annotations:
-    openshift.io/generated-by: OpenShiftNewApp

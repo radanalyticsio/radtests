@@ -45,6 +45,12 @@ public class RadConfiguration {
   private static final String MAX_LOGIN_TRIES = "com.redhat.xpaas.config.login.maxattempts";
   private static final String HTTP_TIMEOUT = "com.redhat.xpaasqe.rad.config.httptimeout";
   private static final String WAIT_FOR_PROJECT_DELETION_DURING_CLEANUP = "com.redhat.xpaas.config.project.waitfordeletion";
+  private static final String DELETE_NAMESPACE_AFTER_TESTS = "com.redhat.xpaas.config.project.cleanupnamespace";
+  private static final String RECREATE_NAMESPACE = "com.redhat.xpaas.config.project.recreatenamespace";
+  private static final String MONGODB_DATABASE_SERVICE_NAME = "mongodb";
+  private static final String MONGODB_USER = "userRQQ";
+  private static final String MONGODB_ADMIN_PASSWORD = "6Bv1VddsJYQ18BOl";
+  private static final String MONGODB_DATABASE = "ophicleide";
 
   private static final Logger log = LoggerFactory.getLogger(RadConfiguration.class);
   private final Properties properties = new Properties();
@@ -131,14 +137,33 @@ public class RadConfiguration {
     return getEnvOtherwiseDefault("OPHICLEIDE_QUERY_WORD", QUERY_WORD);
   }
 
-  public static String mongodbDatabaseName() {
-    return getEnvOtherwiseDefault("MONGODB_DATABASE_NAME", MONGODB_DATABASE_NAME);
+  public static String mongodbServiceName() {
+    return MONGODB_DATABASE_SERVICE_NAME;
+  }
+
+  public static String mongodbDatabase() {
+    return MONGODB_DATABASE;
+  }
+
+  public static String mongodbUserName() {
+    return MONGODB_USER;
+  }
+
+  public static String mongodbPassword() {
+    return MONGODB_ADMIN_PASSWORD;
   }
 
   public static String mongodbAppName() {
     return getEnvOtherwiseDefault("MONGODB_APP_NAME", MONGODB_APP_NAME);
   }
 
+  public static String mongodbURL(){
+    String service =  RadConfiguration.mongodbServiceName();
+    String psw = RadConfiguration.mongodbPassword();
+    String user = RadConfiguration.mongodbUserName();
+    String database = RadConfiguration.mongodbDatabase();
+    return String.format("mongodb://%s:%s@%s/%s", user, psw, service, database);
+  }
   public static String clusterName() {
     return getEnvOtherwiseDefault("OSHINKO_SPARK_CLUSTER_NAME", SPARK_CLUSTER_NAME);
   }
@@ -229,7 +254,7 @@ public class RadConfiguration {
   }
 
   public static int httpTimeout(){
-    return Integer.parseInt(getEnvOtherwiseDefault(" ", HTTP_TIMEOUT));
+    return Integer.parseInt(getEnvOtherwiseDefault("HTTP_TIMEOUT", HTTP_TIMEOUT));
   }
 
   public static Boolean waitForProjectDeletion() {
@@ -237,6 +262,15 @@ public class RadConfiguration {
     return Boolean.valueOf(value);
   }
 
+  public static Boolean deleteNamespaceAfterTests() {
+    String value = getEnvOtherwiseDefault("DELETE_NAMESPACE_AFTER_TESTS", DELETE_NAMESPACE_AFTER_TESTS, "false");
+    return Boolean.valueOf(value);
+  }
+
+  public static Boolean recreateNamespace() {
+    String value = getEnvOtherwiseDefault("RECREATE_NAMESPACE", RECREATE_NAMESPACE, "false");
+    return Boolean.valueOf(value);
+  }
 
   private static String getEnvOtherwiseDefault(String envName, String configValue){
     String value = System.getenv(envName);

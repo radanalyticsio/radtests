@@ -58,6 +58,4 @@ public class SparkNotebookWebUI implements SparkNotebookAPI {
     return container.stream().filter(cells -> cells.getAttribute("class").contains("code_cell")).collect(Collectors.toList());
   }
 
-
-
 }

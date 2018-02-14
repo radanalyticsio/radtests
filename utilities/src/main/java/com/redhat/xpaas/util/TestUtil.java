@@ -122,6 +122,7 @@ public class TestUtil {
     URL finalLink = link;
     BooleanSupplier successConditionForConnection = () -> {
       try {
+
         HttpURLConnection connection = (HttpURLConnection) finalLink.openConnection();
         connection.setRequestMethod("GET");
         connection.connect();
@@ -133,10 +134,11 @@ public class TestUtil {
     };
 
     try {
+
       WaitUtil.waitFor(successConditionForConnection, null, 3000L, RadConfiguration.httpTimeout());
     } catch (InterruptedException | TimeoutException e) {
       e.printStackTrace();
-      System.exit(1);
+      return false;
     }
 
     // Ensure that we wait for the element we expect to be loaded on page load
@@ -144,21 +146,16 @@ public class TestUtil {
     long timeout = System.currentTimeMillis() + RadConfiguration.httpTimeout();
 
     while (System.currentTimeMillis() < timeout) {
-
       webDriver.navigate().to(url);
-
       try {
         Thread.sleep(interval);
       } catch (InterruptedException e) {
         e.printStackTrace();
       }
-
       if (successConditionForElementPresence.getAsBoolean()) {
         return true;
       }
-
     }
-
     return false;
   }
 

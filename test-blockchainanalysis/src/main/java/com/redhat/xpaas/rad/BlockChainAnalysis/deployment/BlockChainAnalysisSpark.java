@@ -1,6 +1,7 @@
 package com.redhat.xpaas.rad.BlockChainAnalysis.deployment;
 
 import com.redhat.xpaas.RadConfiguration;
+import com.redhat.xpaas.logger.LoggerUtil;
 import com.redhat.xpaas.openshift.OpenshiftUtil;
 import com.redhat.xpaas.rad.BlockChainAnalysis.api.BlockChainAnalysisSparkWebUI;
 
@@ -9,12 +10,13 @@ import io.fabric8.openshift.api.model.Template;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeoutException;
 
 public class BlockChainAnalysisSpark {
   private static final OpenshiftUtil openshift = OpenshiftUtil.getInstance();
   private static final String NAMESPACE = RadConfiguration.masterNamespace();
 
-  public static BlockChainAnalysisSparkWebUI deployBlockChainAnalysisSpark() {
+  public static BlockChainAnalysisSparkWebUI deployBlockChainAnalysisSpark() throws TimeoutException, InterruptedException {
     String BlockChainAnalysisTemplateSpark = "/blockchainanalysis/templatespark.yaml";
 
     Template template = openshift.withAdminUser(client ->
@@ -28,7 +30,10 @@ public class BlockChainAnalysisSpark {
     parameters.put("APP_NAME", "bitcoin-spark-notebook");
 
     openshift.loadTemplate(template, parameters);
-    WaitUtil.waitForPodsToReachRunningState("app", "bitcoin-spark-notebook", 1);
+
+    if(!WaitUtil.waitForPodsToReachRunningState("app", "bitcoin-spark-notebook", 1)){
+      throw new IllegalStateException(LoggerUtil.openshiftError("blockchain-spark launch", "pods"));
+    }
 
     return BlockChainAnalysisSparkWebUI.getInstance(openshift.appDefaultHostNameBuilder("bitcoin-spark-notebook"));
   }
