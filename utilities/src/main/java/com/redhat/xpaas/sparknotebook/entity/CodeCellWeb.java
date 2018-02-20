@@ -4,11 +4,7 @@ import com.redhat.xpaas.RadConfiguration;
 import com.redhat.xpaas.util.TestUtil;
 import com.redhat.xpaas.wait.WaitUtil;
 import org.openqa.selenium.*;
-import org.openqa.selenium.interactions.Actions;
-import org.openqa.selenium.interactions.internal.Coordinates;
-import org.openqa.selenium.internal.Locatable;
 import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.Wait;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.util.List;

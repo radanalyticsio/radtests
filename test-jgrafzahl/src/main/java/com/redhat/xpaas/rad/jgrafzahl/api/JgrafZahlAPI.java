@@ -4,7 +4,7 @@ import java.util.Map;
 
 public interface JgrafZahlAPI {
 
-  void loadPage();
+  boolean loadPage();
 
   Map<String, Integer> getWordFrequency();
 

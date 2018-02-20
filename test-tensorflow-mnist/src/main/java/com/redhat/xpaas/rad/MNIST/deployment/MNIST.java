@@ -1,18 +1,17 @@
 package com.redhat.xpaas.rad.MNIST.deployment;
 
 import com.redhat.xpaas.RadConfiguration;
+import com.redhat.xpaas.logger.LoggerUtil;
 import com.redhat.xpaas.openshift.OpenshiftUtil;
 import com.redhat.xpaas.rad.MNIST.api.MNISTWebUI;
 import com.redhat.xpaas.wait.WaitUtil;
 import io.fabric8.openshift.api.model.Template;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeoutException;
 
 public class MNIST {
-  private static final Logger log = LoggerFactory.getLogger(MNIST.class);
   private static final OpenshiftUtil openshift = OpenshiftUtil.getInstance();
   private static final String NAMESPACE = RadConfiguration.masterNamespace();
   private static final Long TIMEOUT = RadConfiguration.timeout();
@@ -20,7 +19,7 @@ public class MNIST {
   private static final String tensorflowServingTemplate = "/MNIST/tensorflow-serving-template.yaml";
 
 
-  public static MNISTWebUI deployMNIST() {
+  public static MNISTWebUI deployMNIST() throws TimeoutException, InterruptedException {
     Template app = openshift.withAdminUser(client ->
       client.inNamespace(NAMESPACE).templates().load(MNIST.class.getResourceAsStream(appTemplate)).createOrReplace()
     );
@@ -48,11 +47,12 @@ public class MNIST {
     openshift.loadTemplate(tensorflowServing, endpointAParameters);
     openshift.loadTemplate(tensorflowServing, endpointBParameters);
 
-    log.info("action=waiting-for-resources status=START");
-    WaitUtil.waitForActiveBuildsToComplete();
-    WaitUtil.waitForPodsToReachRunningState("appName", "tf-cnn", 1);
-    WaitUtil.waitForPodsToReachRunningState("appName", "tf-reg", 1);
-    WaitUtil.waitForPodsToReachRunningState("appid", "mnist-app-mnist-app", 1);
+    if(!WaitUtil.waitForActiveBuildsToComplete() ||
+      !WaitUtil.waitForPodsToReachRunningState("appName", "tf-cnn", 1) ||
+      !WaitUtil.waitForPodsToReachRunningState("appName", "tf-reg", 1) ||
+      !WaitUtil.waitForPodsToReachRunningState("appid", "mnist-app-mnist-app", 1)){
+      throw new IllegalStateException(LoggerUtil.openshiftError("mnist build/deployment", "pod/build"));
+    }
 
     return MNISTWebUI.getInstance(openshift.appDefaultHostNameBuilder("mnist-app"));
   }

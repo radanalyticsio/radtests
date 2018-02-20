@@ -1,37 +1,29 @@
 package com.redhat.xpaas;
 
-import com.redhat.xpaas.logger.LogWrapper;
+import com.redhat.xpaas.logger.Loggable;
 import com.redhat.xpaas.openshift.OpenshiftUtil;
 import com.redhat.xpaas.rad.PySparkHDFS.api.PySparkHDFSWebUI;
 import org.assertj.core.api.Assertions;
 import org.junit.*;
-import org.junit.rules.TestRule;
-import org.junit.rules.TestWatcher;
-import org.junit.runner.Description;
 import org.junit.runners.MethodSorters;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.TimeoutException;
+
+@Loggable(project="pysparkhdfs")
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class WebUITest {
 
   private static PySparkHDFSWebUI PySparkHDFS;
   private static final OpenshiftUtil openshift = OpenshiftUtil.getInstance();
   private static final String SPARK_MASTER_URL = RadConfiguration.sparkMasterURL();
-  LogWrapper log = new LogWrapper(Setup.class, "pysparkhdfs");
   private static final String HDFS_HOST = RadConfiguration.HadoopHost();
   private static final String HDFS_PORT = RadConfiguration.HadoopPort();
   private static final String HDFS_PATH = RadConfiguration.HadoopPath();
 
-  @Rule
-  public TestRule watcher = log.getLogTestWatcher();
-
-
   @BeforeClass
-  public static void setUP() {
+  public static void setUP() throws TimeoutException, InterruptedException {
     Setup setup = new Setup();
     WebUITest.PySparkHDFS = setup.initializeApplications();
-    //WebUITest.PySparkHDFS = PySparkHDFSWebUI.getInstance(openshift.appDefaultHostNameBuilder("base-notebook"));
     PySparkHDFS.login("developer");
     PySparkHDFS.loadProjectByURL("PySpark_HDFS.ipynb");
   }

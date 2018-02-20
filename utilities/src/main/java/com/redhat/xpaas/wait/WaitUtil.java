@@ -1,7 +1,5 @@
 package com.redhat.xpaas.wait;
 
-import java.io.IOException;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -17,7 +15,6 @@ import com.redhat.xpaas.openshift.OpenshiftUtil;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.PodCondition;
 import io.fabric8.openshift.api.model.Build;
-import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,17 +41,12 @@ public class WaitUtil {
 		return hasBuildFailed(_x -> true);
 	}
 
-	public static void waitForPodsToReachRunningState(String labelKey, String labelValue, int podCount){
+	public static boolean waitForPodsToReachRunningState(String labelKey, String labelValue, int podCount) throws TimeoutException, InterruptedException {
 		BooleanSupplier successCondition = () -> openshift.podRunning(labelKey, labelValue);
-
-    try {
-			WaitUtil.waitFor(successCondition);
-		} catch (InterruptedException|TimeoutException e) {
-			e.printStackTrace();
-		}
+		return WaitUtil.waitFor(successCondition);
 	}
 
-	public static void waitForActiveBuildsToComplete(){
+	public static boolean waitForActiveBuildsToComplete() throws TimeoutException, InterruptedException {
     BooleanSupplier successCondition = () -> openshift.getBuilds().stream().filter(
       build -> build.getStatus().getPhase().equals("Complete")).count() == openshift.getBuilds().size();
 
@@ -62,22 +54,12 @@ public class WaitUtil {
       build -> build.getStatus().getPhase().equals("Cancelled") || build.getStatus().getPhase().equals("Failed"))
       .count() > 0;
 
-    try {
-      WaitUtil.waitFor(successCondition, failCondition, DEFAULT_WAIT_INTERVAL, TIMEOUT);
-    } catch (InterruptedException|TimeoutException e) {
-      e.printStackTrace();
-    }
+		return WaitUtil.waitFor(successCondition, failCondition, DEFAULT_WAIT_INTERVAL, TIMEOUT);
   }
 
-  public static void waitForRoute(String routeName, Long timeOut){
+  public static void waitForRoute(String routeName, Long timeOut) throws TimeoutException, InterruptedException {
     BooleanSupplier successCondition =  () -> openshift.getRouteStatus(routeName);
-    try {
-      WaitUtil.waitFor(successCondition, null, DEFAULT_WAIT_INTERVAL, timeOut);
-    } catch (InterruptedException|TimeoutException e) {
-      LOGGER.error(String.format("Error occurred while waiting for Route %s availability", routeName));
-      e.printStackTrace();
-      System.exit(1);
-    }
+		WaitUtil.waitFor(successCondition, null, DEFAULT_WAIT_INTERVAL, timeOut);
   }
 
   public static boolean isPodReady(Pod pod) {
@@ -89,10 +71,6 @@ public class WaitUtil {
 		}
 
 		return false;
-	}
-
-	public static boolean isPodRunning(Pod pod) {
-		return "Running".equals(pod.getStatus().getPhase());
 	}
 
 	public static boolean hasPodRestartedAtLeastNTimes(Pod pod, int n) {
@@ -256,8 +234,8 @@ public class WaitUtil {
 		return waitFor(condition, failCondition, DEFAULT_WAIT_INTERVAL, RadConfiguration.timeout());
 	}
 
-	public static void waitFor(BooleanSupplier condition) throws InterruptedException, TimeoutException {
-		waitFor(condition, null, DEFAULT_WAIT_INTERVAL, RadConfiguration.timeout());
+	public static boolean waitFor(BooleanSupplier condition) throws InterruptedException, TimeoutException {
+		return waitFor(condition, null, DEFAULT_WAIT_INTERVAL, RadConfiguration.timeout());
 	}
 
 	public static void assertEventually(String message, BooleanSupplier condition, long interval, long timeout) throws InterruptedException {

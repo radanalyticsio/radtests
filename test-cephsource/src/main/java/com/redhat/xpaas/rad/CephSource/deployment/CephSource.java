@@ -8,12 +8,13 @@ import io.fabric8.openshift.api.model.Template;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeoutException;
 
 public class CephSource {
   private static final OpenshiftUtil openshift = OpenshiftUtil.getInstance();
   private static final String NAMESPACE = RadConfiguration.masterNamespace();
 
-  public static CephSourceWebUI deployCephSource() {
+  public static CephSourceWebUI deployCephSource() throws TimeoutException, InterruptedException {
     String CephSourceTemplate = "/cephsource/template.yaml";
 
     Template template = openshift.withAdminUser(client ->

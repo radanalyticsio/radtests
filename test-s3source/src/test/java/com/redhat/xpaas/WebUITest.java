@@ -1,49 +1,25 @@
 package com.redhat.xpaas;
 
+import com.redhat.xpaas.logger.Loggable;
 import com.redhat.xpaas.openshift.OpenshiftUtil;
 import com.redhat.xpaas.rad.S3Source.api.S3SourceWebUI;
-import com.redhat.xpaas.util.TestUtil;
 import org.assertj.core.api.Assertions;
 import org.junit.*;
-import org.junit.rules.TestRule;
-import org.junit.rules.TestWatcher;
-import org.junit.runner.Description;
 import org.junit.runners.MethodSorters;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.util.stream.IntStream;
+import java.util.concurrent.TimeoutException;
 
-
+@Loggable(project ="S3Source")
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class WebUITest {
 
   private static S3SourceWebUI S3Source;
-  private Logger log = LoggerFactory.getLogger(WebUITest.class);;
   private static final OpenshiftUtil openshift = OpenshiftUtil.getInstance();
 
-  @Rule
-  public TestRule watcher = new TestWatcher() {
-    protected void starting(Description description) {
-      log.info("project=s3source action=starting-test-" + description.getMethodName() + " status=START");
-    }
-
-    @Override
-    protected void failed(Throwable e, Description description) {
-      log.info("project=s3source action=starting-test-" + description.getMethodName() + " status=FAILED");
-    }
-
-    @Override
-    protected void succeeded(Description description) {
-      log.info("project=s3source action=starting-test-" + description.getMethodName() + " status=PASSED");
-    }
-  };
-
   @BeforeClass
-  public static void setUp() {
+  public static void setUp() throws TimeoutException, InterruptedException {
     Setup setup = new Setup();
     WebUITest.S3Source = setup.initializeApplications();
-    //WebUITest.S3Source = S3SourceWebUI.getInstance(openshift.appDefaultHostNameBuilder("base-notebook"));
     S3Source.login("developer");
     S3Source.loadProjectByURL("s3-source-example.ipynb");
   }
@@ -75,7 +51,7 @@ public class WebUITest {
   }
 
   @Test
-  public void testReadParquetFileFromS3(){
+  public void testEReadParquetFileFromS3(){
     assertCodeCellRange(9, 14);
   }
 

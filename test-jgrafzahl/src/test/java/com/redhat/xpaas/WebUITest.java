@@ -1,40 +1,35 @@
 package com.redhat.xpaas;
 
-import com.redhat.xpaas.logger.LogWrapper;
+import com.redhat.xpaas.logger.Loggable;
 import com.redhat.xpaas.openshift.OpenshiftUtil;
 import com.redhat.xpaas.rad.jgrafzahl.api.JgrafZahlWebUI;
-import com.redhat.xpaas.wait.WaitUtil;
 import org.assertj.core.api.Assertions;
 import org.junit.*;
-import org.junit.rules.TestRule;
 import org.junit.runners.MethodSorters;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeoutException;
 
+@Loggable(project ="grafzahl")
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class WebUITest {
-  LogWrapper log = new LogWrapper(Setup.class, "grafzahl");
+
   private static JgrafZahlWebUI jgrafZahl;
   private static JgrafZahlWebUI grafZahl;
   private static final OpenshiftUtil openshift = OpenshiftUtil.getInstance();
-  private String NAMESPACE = RadConfiguration.masterNamespace();
-
-  @Rule
-  public TestRule watcher = log.getLogTestWatcher();
 
   @BeforeClass
-  public static void setUP() {
+  public static void setUP() throws TimeoutException, InterruptedException {
     Setup setup = new Setup();
     JgrafZahlWebUI[] grafzahls = setup.initializeApplications();
 
     jgrafZahl = grafzahls[0];
     grafZahl = grafzahls[1];
 
-    jgrafZahl.loadPage();
-    grafZahl.loadPage();
+    if(!jgrafZahl.loadPage() || !grafZahl.loadPage()){
+      throw new RuntimeException("Failed to load Webui for jgrafZahl/grafZahl.");
+    }
   }
 
   @AfterClass
@@ -111,8 +106,6 @@ public class WebUITest {
     int newWordCount = oldWordCount + ThreadLocalRandom.current().nextInt(1, 6);
     Assertions.assertThat(grafZahl.changeNumberOfWords(newWordCount)).isTrue();
   }
-
-
 
 }
 

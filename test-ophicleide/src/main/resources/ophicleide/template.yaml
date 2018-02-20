@@ -88,10 +88,10 @@ parameters:
   - name: SPARK
     description: connection string for the spark master
     required: true
-    value: "spark://sparkc:7077"
   - name: MONGO
     description: connection string for mongo
     required: true
-    value: "mongodb://userRQQ:6Bv1VddsJYQ18BOl@mongodb/ophicleide"
   - name: WEB_ROUTE_HOSTNAME
     description: The hostname used to create the external route for the ophicleide-web component
+
+

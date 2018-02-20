@@ -1,6 +1,7 @@
 package com.redhat.xpaas;
 
-import com.redhat.xpaas.logger.LogWrapper;
+import com.redhat.xpaas.logger.Loggable;
+import com.redhat.xpaas.logger.LoggerUtil;
 import com.redhat.xpaas.openshift.OpenshiftUtil;
 import com.redhat.xpaas.oshinko.deployment.Oshinko;
 import com.redhat.xpaas.rad.apachekafka.deployment.ApacheKafka;
@@ -13,8 +14,8 @@ import java.util.concurrent.TimeoutException;
 import static com.redhat.xpaas.rad.jgrafzahl.deployment.JgrafZahl.deployJgrafZahl;
 import static com.redhat.xpaas.rad.jgrafzahl.deployment.GrafZahl.deployGrafZahl;
 
+@Loggable(project ="grafzahl")
 public class Setup {
-  LogWrapper log = new LogWrapper(Setup.class, "grafzahl");
   private String NAMESPACE = RadConfiguration.masterNamespace();
   private OpenshiftUtil openshift = OpenshiftUtil.getInstance();
   private static JgrafZahlWebUI JgrafZahl;
@@ -22,49 +23,48 @@ public class Setup {
 
   // Returns an array of size 2 where at index 0 contains Jgrafzahl web UI and index 2
   // contains Grafzahl's web ui api.
-  JgrafZahlWebUI[] initializeApplications() {
-    log.action("creating-new-namespace", this::initializeProject);
+  public JgrafZahlWebUI[] initializeApplications() throws TimeoutException, InterruptedException {
 
-    log.action("loading-oshinko-resources", () -> {
-      Oshinko.createServiceAccount("edit");
-      Oshinko.loadJavaSparkResources();
-    });
+    initializeProject();
 
-    log.action("launching-apache-kafka", ApacheKafka::deployApacheKafka);
-    log.action("launching-wordfountain", WordFountain::deployWordFountain);
-    log.action("launching-jgrafzahl", () -> JgrafZahl = deployJgrafZahl());
-    log.action("launching-grafzahl", () -> GrafZahl = deployGrafZahl());
+    Oshinko.createServiceAccount("edit");
+    Oshinko.loadJavaSparkResources();
 
-    log.action("waiting-for-pods-to-ready", () -> {
-      WaitUtil.waitForActiveBuildsToComplete();
-      try {
-        WaitUtil.waitFor(WaitUtil.isAPodReady("word-fountain"));
-        WaitUtil.waitFor(WaitUtil.isAPodReady("jgrafzahl"));
-        WaitUtil.waitFor(WaitUtil.isAPodReady("grafzahl"));
-        WaitUtil.waitFor(WaitUtil.areNWorkerReady(2));
-        WaitUtil.waitFor(WaitUtil.areNMastersReady(2));
-      } catch (InterruptedException | TimeoutException e) {
-        e.printStackTrace();
-      }
-    });
+    ApacheKafka.deployApacheKafka();
+    WordFountain.deployWordFountain();
+
+    // The following will also deploy the spark master/workers
+    JgrafZahl = deployJgrafZahl();
+    GrafZahl = deployGrafZahl();
+
+    // In order to account for all worker/masters for both grafzahls we wait for their deployments here
+    if(!WaitUtil.waitFor(WaitUtil.areNWorkerReady(2))){
+      throw new IllegalStateException(LoggerUtil.openshiftError("spark-worker deployment", "pod"));
+    }
+
+    if(!WaitUtil.waitFor(WaitUtil.areNMastersReady(2))){
+      throw new IllegalStateException(LoggerUtil.openshiftError("spark-master deployment", "pod"));
+    }
 
     return new JgrafZahlWebUI[]{JgrafZahl, GrafZahl};
   }
 
-  void cleanUp() {
+  public void cleanUp() {
     if(JgrafZahl != null){
-      log.action("shutting-down-jgrafzahl-webdrivers", () -> JgrafZahl.webDriverCleanup());
+      JgrafZahl.webDriverCleanup();
     }
 
     if(GrafZahl != null){
-      log.action("shutting-down-grafzahl-webdrivers", () -> GrafZahl.webDriverCleanup());
+      GrafZahl.webDriverCleanup();
     }
 
-    log.action("deleting-namespace", () -> openshift.deleteProject(NAMESPACE));
+    if(RadConfiguration.deleteNamespaceAfterTests()){
+      openshift.deleteProject(NAMESPACE);
+    }
   }
 
   private void initializeProject(){
-    OpenshiftUtil.getInstance().createProject(NAMESPACE, true);
+    OpenshiftUtil.getInstance().createProject(NAMESPACE, RadConfiguration.recreateNamespace());
   }
 
 }

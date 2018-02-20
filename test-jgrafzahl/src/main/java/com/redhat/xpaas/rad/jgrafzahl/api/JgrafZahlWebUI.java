@@ -13,10 +13,8 @@ import java.util.Map;
 import java.util.List;
 import java.util.function.BooleanSupplier;
 
-
 public class JgrafZahlWebUI implements JgrafZahlAPI{
 
-  private final static Long TIMEOUT = (long) RadConfiguration.httpTimeout();
   private final String HOSTNAME;
   private final WebDriver webDriver;
 
@@ -30,13 +28,13 @@ public class JgrafZahlWebUI implements JgrafZahlAPI{
   }
 
   @Override
-  public void loadPage(){
+  public boolean loadPage(){
     String url = "http://" + HOSTNAME;
     webDriver.get(url);
     By byFirstBar = By.className("c3-event-rect-0");
     By bySecondBar = By.className("c3-event-rect-1");
     BooleanSupplier successCondition = () -> webDriver.findElements(byFirstBar).size() > 0 && webDriver.findElements(bySecondBar).size() > 0;
-    TestUtil.pageLoaded(2000L, webDriver, url, successCondition);
+    return TestUtil.pageLoaded(2000L, webDriver, url, successCondition);
   }
 
   @Override
@@ -105,7 +103,7 @@ public class JgrafZahlWebUI implements JgrafZahlAPI{
     input.sendKeys(String.valueOf(newWordCount));
 
     // Wait for new word count to be loaded, attempt for 2 min
-    int maxNumberOfAttempts = 60;
+    int maxNumberOfAttempts = 24;
     int currentWordCount = getNumberOfWordsInXAxis();
     while(currentWordCount != newWordCount && maxNumberOfAttempts != 0){
       try {

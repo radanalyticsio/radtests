@@ -1,42 +1,29 @@
 package com.redhat.xpaas.rad.ophicleide.deployment;
 
+import com.redhat.xpaas.logger.LoggerUtil;
 import com.redhat.xpaas.openshift.OpenshiftUtil;
 import com.redhat.xpaas.rad.ophicleide.api.OphicleideWebUI;
 import com.redhat.xpaas.RadConfiguration;
 import com.redhat.xpaas.wait.WaitUtil;
-import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.openshift.api.model.BuildRequestBuilder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import io.fabric8.openshift.api.model.Template;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
-import java.util.function.BooleanSupplier;
-import java.util.function.Predicate;
+
+import static com.redhat.xpaas.wait.WaitUtil.waitForActiveBuildsToComplete;
 
 public class Ophicleide {
   private static final OpenshiftUtil openshift = OpenshiftUtil.getInstance();
   private static final String APP_NAME = RadConfiguration.ophicleideAppName();
-  private static final int WORKERS_COUNT = RadConfiguration.oshinkoInitialWorkerCount();
-  private static final String CLUSTER_NAME = RadConfiguration.clusterName();
   private static final Long TIMEOUT = RadConfiguration.timeout();
-  private static final String MONGODB_APP_NAME = RadConfiguration.mongodbAppName();
   private static final String NAMESPACE = RadConfiguration.masterNamespace();
 
-  public static OphicleideWebUI deployOphicleideWebUI() {
+  public static OphicleideWebUI deployOphicleideWebUI() throws TimeoutException, InterruptedException {
     initializeOphicleideResources();
     startBuilds();
     launchApplication();
     return OphicleideWebUI.getInstance(openshift.appDefaultHostNameBuilder("ophicleide-web"));
-  }
-
-  // Ensure Mongodb/sparkclusters pods are ready
-  private static void waitForSetup(){
-    String masterName = CLUSTER_NAME + "-m";
-    String workerName = CLUSTER_NAME + "-w";
-    WaitUtil.waitForPodsToReachRunningState("deploymentconfig", masterName, 1);
-    WaitUtil.waitForPodsToReachRunningState("deploymentconfig", workerName, WORKERS_COUNT);
-    WaitUtil.waitForPodsToReachRunningState("name", MONGODB_APP_NAME, 1);
   }
 
   private static void initializeOphicleideResources(){
@@ -60,11 +47,9 @@ public class Ophicleide {
     openshift.withAdminUser(client ->
       client.buildConfigs().inNamespace(NAMESPACE).load(Ophicleide.class.getResourceAsStream(buildConfigWeb)).create()
     );
-
-
   }
 
-  private static void startBuilds(){
+  private static void startBuilds() throws TimeoutException, InterruptedException {
     // Run Builds
     openshift.withAdminUser(client ->
       client.buildConfigs().inNamespace(NAMESPACE).withName("ophicleide-web").instantiate(new BuildRequestBuilder()
@@ -82,31 +67,25 @@ public class Ophicleide {
         .build())
     );
 
-    // Wait for builds to complete
-    BooleanSupplier successCondition = () -> openshift.getBuilds().stream().filter(
-      build -> build.getStatus().getPhase().equals("Complete")).count() == openshift.getBuilds().size();
-
-    BooleanSupplier failCondition = () -> openshift.getBuilds().stream().filter(
-      build -> build.getStatus().getPhase().equals("Cancelled") || build.getStatus().getPhase().equals("Failed"))
-      .count() > 0;
-
-    try {
-      WaitUtil.waitFor(successCondition, failCondition, 1000L, TIMEOUT);
-    } catch (InterruptedException|TimeoutException e) {
-      e.printStackTrace();
+    if(!waitForActiveBuildsToComplete()){
+      throw new IllegalStateException(LoggerUtil.openshiftError("ophicleide builds", "build"));
     }
   }
 
-  private static void launchApplication() {
-    String template = "/ophicleide/template.yaml";
-    waitForSetup();
-    openshift.withAdminUser(client ->
-      client.inNamespace(NAMESPACE).load(Ophicleide.class.getResourceAsStream(template))
-        .deletingExisting()
-        .createOrReplace()
+  private static void launchApplication() throws TimeoutException, InterruptedException {
+    String ophResource = "/ophicleide/template.yaml";
+    Template template = openshift.withAdminUser(client ->
+      client.templates().inNamespace(NAMESPACE).load(Ophicleide.class.getResourceAsStream(ophResource)).createOrReplace()
     );
-    WaitUtil.waitForPodsToReachRunningState("name", APP_NAME, 1);
+
+    Map<String, String> parameters = new HashMap<>();
+    parameters.put("SPARK", RadConfiguration.sparkMasterURL());
+    parameters.put("MONGO", RadConfiguration.mongodbURL());
+
+    openshift.loadTemplate(template, parameters);
+
+    if(!WaitUtil.waitForPodsToReachRunningState("name", APP_NAME, 1)){
+      throw new IllegalStateException(LoggerUtil.openshiftError("ophicleide deployment", "pods"));
+    }
   }
-
-
 }
