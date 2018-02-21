@@ -1,15 +1,15 @@
 package com.redhat.xpaas.openshift;
 
 import com.redhat.xpaas.RadConfiguration;
+import com.redhat.xpaas.logger.Loggable;
 import io.fabric8.kubernetes.api.model.*;
+import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.openshift.api.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.redhat.xpaas.wait.WaitUtil;
-import java.net.InetAddress;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.UnknownHostException;
+
+import java.net.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 import io.fabric8.openshift.client.DefaultOpenShiftClient;
 import io.fabric8.openshift.client.NamespacedOpenShiftClient;
@@ -84,7 +85,37 @@ public class OpenshiftUtil implements AutoCloseable {
       }
       adminClient = new DefaultOpenShiftClient(config);
     }
-    return f.apply(adminClient);
+
+    // Here we attempt to catch a SocketTimeoutException (if it occurs) when connecting ot k8s cluster
+    // If encountered, retry maximum of 3 times.
+    // Any other KubernetesClientException exception is thrown as usual.
+    R result = null;
+    Throwable cause;
+    int retrySocketAttempts = 3;
+    boolean successfullyApplied = false;
+    while(retrySocketAttempts > 0 && !successfullyApplied) {
+      try {
+        result = f.apply(adminClient);
+        successfullyApplied = true;
+        // Display success message only if a time out occurred the previous attempts.
+        if(retrySocketAttempts < 3){
+          LOGGER.info("Connected to k8s cluster successfully.");
+        }
+      } catch (KubernetesClientException k) {
+        cause = k.getCause();
+        if(cause instanceof SocketTimeoutException){
+          LOGGER.warn("SocketTimeoutException encountered while trying to connect to k8s cluster, retrying...");
+          retrySocketAttempts--;
+        } else {
+          throw k;
+        }
+      }
+    }
+
+    if(!successfullyApplied){
+      throw new RuntimeException("Timed out waiting for k8s cluster", new SocketTimeoutException());
+    }
+    return result;
   }
 
   // general purpose methods
@@ -120,7 +151,25 @@ public class OpenshiftUtil implements AutoCloseable {
         return client.inNamespace(NAMESPACE).lists().create(l);
       }
     );
+  }
 
+  public void loadTemplate(Template template){
+    withAdminUser(client -> {
+        KubernetesList l = client.templates()
+          .inNamespace(NAMESPACE).withName(template.getMetadata().getName()).process();
+        return client.inNamespace(NAMESPACE).lists().create(l);
+      }
+    );
+  }
+
+  /** Pre-condition: template has only one deployment config. **/
+  public DeploymentConfig getOnlyDeploymentConfigFromTemplate(Template template){
+    Optional<HasMetadata> deploymentOptional = template.getObjects().stream().filter(o -> o.getKind().equals("DeploymentConfig")).findFirst();
+
+    if(!deploymentOptional.isPresent()){
+      throw new IllegalStateException("No deploymentconfig found in PySpark template");
+    }
+    return (DeploymentConfig) deploymentOptional.get();
   }
 
   // project
@@ -261,6 +310,26 @@ public class OpenshiftUtil implements AutoCloseable {
     return pod.map(p -> p.getStatus().getPhase().equals(phase)).orElse(false);
   }
 
+  // containers
+  public Container getContainer(int index, DeploymentConfig dc){
+    List<Container> containers = dc.getSpec().getTemplate().getSpec().getContainers();
+    return containers.get(index);
+  }
+
+  public Container addEnvVarsToContainer(Map<String, String> envVars, Container container){
+    List<EnvVar> currentVars = container.getEnv();
+
+    EnvVar ev;
+    for(String k : envVars.keySet()){
+      ev = new EnvVar();
+      ev.setName(k);
+      ev.setValue(envVars.get(k));
+      currentVars.add(ev);
+    }
+
+    return container;
+  }
+
   // builds
   public Collection<Build> getBuilds() {
     return getBuilds(NAMESPACE);
@@ -293,6 +362,7 @@ public class OpenshiftUtil implements AutoCloseable {
   public Boolean getRouteStatus(String route){
     return getRouteStatus(getRoute(route));
   }
+
   public Boolean getRouteStatus(Route route){
     return Boolean.valueOf(route.getStatus().getIngress().get(0).getConditions().get(0).getStatus());
   }

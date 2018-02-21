@@ -66,22 +66,27 @@ public final class MethodLogger {
 
     // Log start
     String message = annotation.message().isEmpty() ? method.getName() : annotation.message();
+    boolean isTest = (method.getName().startsWith("test"));
 
     Object result;
     log.start(message);
     try {
       result = point.proceed();
-      log.finish(message, System.currentTimeMillis() - start);
+      if (isTest){
+        log.passed(message, System.currentTimeMillis() - start);
+      } else {
+        log.finish(message, System.currentTimeMillis() - start);
+      }
     } catch(Throwable throwable) {
       String e = throwable.getMessage();
-      if (method.getName().startsWith("test")){
+      if (isTest){
+        e.substring(0, Math.min(e.length(), 100));
         log.failed(message, "\"" + e.substring(0, Math.min(e.length(), 100)) + "...\"", System.currentTimeMillis() - start);
       } else {
         log.error(message, "\"" + e.substring(0, Math.min(e.length(), 100)) + "...\"");
       }
       throw throwable;
     }
-
     return result;
   }
 

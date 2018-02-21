@@ -1,54 +1,86 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <configuration>
-	<!-- APPENDERS LIST -->
-	<appender name="consoleAppender" class="ch.qos.logback.core.ConsoleAppender">
-		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-			<level>${log.level:-INFO}</level>
-		</filter>
-		<encoder>
-			<pattern>[%d] %-5p- %m%n</pattern>
-		</encoder>
-	</appender>
-	<appender name="asyncConsoleAppender" class="ch.qos.logback.classic.AsyncAppender">
-		<queueSize>300</queueSize>
-		<appender-ref ref="consoleAppender"/>
-	</appender>
+  <!-- APPENDERS LIST -->
+  <appender name="consoleAppender" class="ch.qos.logback.core.ConsoleAppender">
+    <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+      <level>${log.level:-INFO}</level>
+    </filter>
+    <encoder>
+      <pattern>Level=%-5level%m%n</pattern>
+    </encoder>
+  </appender>
+  <appender name="asyncConsoleAppender" class="ch.qos.logback.classic.AsyncAppender">
+    <queueSize>300</queueSize>
+    <appender-ref ref="consoleAppender"/>
+  </appender>
 
-	<appender name="testAppender" class="ch.qos.logback.core.FileAppender">
-		<file>log/test.log</file>
-		<append>false</append>
-		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-			<level>DEBUG</level>
-		</filter>
-		<encoder>
-			<pattern>[%d] %-5p- %m%n</pattern>
-		</encoder>
-	</appender>
-	<appender name="asyncTestAppender" class="ch.qos.logback.classic.AsyncAppender">
-		<queueSize>300</queueSize>
-		<appender-ref ref="testAppender"/>
-	</appender>
+  <appender name="testAppender" class="ch.qos.logback.core.FileAppender">
+    <file>log/test.log</file>
+    <append>false</append>
+    <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+      <level>DEBUG</level>
+    </filter>
+    <encoder>
+      <pattern>Level=%-5level%m%n</pattern>
+    </encoder>
+  </appender>
+  <appender name="asyncTestAppender" class="ch.qos.logback.classic.AsyncAppender">
+    <queueSize>300</queueSize>
+    <appender-ref ref="testAppender"/>
+  </appender>
 
-	<appender name="defaulAppender" class="ch.qos.logback.core.FileAppender">
-		<file>log/everything.log</file>
-		<append>false</append>
-		<encoder>
-			<pattern>[%d] %-5p- %m%n</pattern>
-		</encoder>
-	</appender>
-	<appender name="asyncDefaulAppender" class="ch.qos.logback.classic.AsyncAppender">
-		<queueSize>300</queueSize>
-		<appender-ref ref="defaulAppender"/>
-	</appender>
+  <appender name="defaulAppender" class="ch.qos.logback.core.FileAppender">
+    <file>log/everything.log</file>
+    <append>false</append>
+    <encoder>
+      <pattern>Level=%-5level%m%n</pattern>
+    </encoder>
+  </appender>
+  <appender name="asyncDefaulAppender" class="ch.qos.logback.classic.AsyncAppender">
+    <queueSize>300</queueSize>
+    <appender-ref ref="defaulAppender"/>
+  </appender>
 
-	<!-- LOGGER LIST -->
-	<logger name="com.redhat" level="DEBUG">
-		<appender-ref ref="asyncTestAppender"/>
-		<appender-ref ref="asyncConsoleAppender"/>
-	</logger>
+  <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+      <pattern>Level=%-5level%m%n</pattern>
+    </encoder>
+  </appender>
 
-	<root level="INFO">
-		<appender-ref ref="asyncDefaulAppender"/>
-	</root>
+  <if condition='isDefined("kafka.host")'>
+    <then>
+      <!-- This is the kafkaAppender -->
+      <appender name="kafkaAppender" class="com.github.danielwegener.logback.kafka.KafkaAppender">
+        <encoder>
+          <pattern>Level=%-5level%m%n</pattern>
+        </encoder>
+        <topic>logs</topic>
+        <keyingStrategy class="com.github.danielwegener.logback.kafka.keying.NoKeyKeyingStrategy" />
+        <deliveryStrategy class="com.github.danielwegener.logback.kafka.delivery.AsynchronousDeliveryStrategy" />
+        <producerConfig>bootstrap.servers=${kafka.host}:${kafka.port}</producerConfig>
+        <appender-ref ref="STDOUT" />
+      </appender>
+    </then>
+  </if>
+
+  <!-- LOGGER LIST -->
+  <logger name="com.redhat" level="DEBUG">
+    <appender-ref ref="asyncTestAppender"/>
+    <appender-ref ref="asyncConsoleAppender"/>
+  </logger>
+
+  <if condition='isDefined("kafka.host")'>
+    <then>
+      <root level="INFO">
+        <appender-ref ref="asyncDefaulAppender"/>
+        <appender-ref ref="kafkaAppender" />
+      </root>
+    </then>
+    <else>
+      <root level="INFO">
+        <appender-ref ref="asyncDefaulAppender"/>
+      </root>
+    </else>
+  </if>
 </configuration>

@@ -14,7 +14,7 @@ import java.util.concurrent.TimeoutException;
 import static com.redhat.xpaas.rad.jgrafzahl.deployment.JgrafZahl.deployJgrafZahl;
 import static com.redhat.xpaas.rad.jgrafzahl.deployment.GrafZahl.deployGrafZahl;
 
-@Loggable(project ="grafzahl")
+@Loggable(project = "grafzahl")
 public class Setup {
   private String NAMESPACE = RadConfiguration.masterNamespace();
   private OpenshiftUtil openshift = OpenshiftUtil.getInstance();

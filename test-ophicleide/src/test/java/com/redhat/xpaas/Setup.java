@@ -9,7 +9,7 @@ import com.redhat.xpaas.rad.ophicleide.deployment.Ophicleide;
 
 import java.util.concurrent.TimeoutException;
 
-@Loggable(project ="ophicleide")
+@Loggable(project = "ophicleide")
 public class Setup {
 
   private String NAMESPACE = RadConfiguration.masterNamespace();
