@@ -7,7 +7,7 @@
 			<level>${log.level:-INFO}</level>
 		</filter>
 		<encoder>
-			<pattern>[%d] %-5p- %m%n</pattern>
+			<pattern>Level=%-5level%m%n</pattern>
 		</encoder>
 	</appender>
 	<appender name="asyncConsoleAppender" class="ch.qos.logback.classic.AsyncAppender">
@@ -22,7 +22,7 @@
 			<level>DEBUG</level>
 		</filter>
 		<encoder>
-			<pattern>level=%-5p%m%n</pattern>
+			<pattern>Level=%-5level%m%n</pattern>
 		</encoder>
 	</appender>
 	<appender name="asyncTestAppender" class="ch.qos.logback.classic.AsyncAppender">
@@ -34,7 +34,7 @@
 		<file>log/everything.log</file>
 		<append>false</append>
 		<encoder>
-			<pattern>[%d] %-5p- %m%n</pattern>
+			<pattern>Level=%-5level%m%n</pattern>
 		</encoder>
 	</appender>
 	<appender name="asyncDefaulAppender" class="ch.qos.logback.classic.AsyncAppender">
@@ -42,13 +42,45 @@
 		<appender-ref ref="defaulAppender"/>
 	</appender>
 
+	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<pattern>Level=%-5level%m%n</pattern>
+		</encoder>
+	</appender>
+
+	<if condition='isDefined("kafka.host")'>
+		<then>
+			<!-- This is the kafkaAppender -->
+			<appender name="kafkaAppender" class="com.github.danielwegener.logback.kafka.KafkaAppender">
+				<encoder>
+					<pattern>Level=%-5level%m%n</pattern>
+				</encoder>
+				<topic>logs</topic>
+				<keyingStrategy class="com.github.danielwegener.logback.kafka.keying.NoKeyKeyingStrategy" />
+				<deliveryStrategy class="com.github.danielwegener.logback.kafka.delivery.AsynchronousDeliveryStrategy" />
+				<producerConfig>bootstrap.servers=${kafka.host}:${kafka.port}</producerConfig>
+				<appender-ref ref="STDOUT" />
+			</appender>
+		</then>
+	</if>
+
 	<!-- LOGGER LIST -->
 	<logger name="com.redhat" level="DEBUG">
 		<appender-ref ref="asyncTestAppender"/>
 		<appender-ref ref="asyncConsoleAppender"/>
 	</logger>
 
-	<root level="INFO">
-		<appender-ref ref="asyncDefaulAppender"/>
-	</root>
+	<if condition='isDefined("kafka.host")'>
+		<then>
+			<root level="INFO">
+				<appender-ref ref="asyncDefaulAppender"/>
+				<appender-ref ref="kafkaAppender" />
+			</root>
+		</then>
+		<else>
+			<root level="INFO">
+				<appender-ref ref="asyncDefaulAppender"/>
+			</root>
+		</else>
+	</if>
 </configuration>

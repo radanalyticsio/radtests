@@ -1,401 +1,431 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
-    <modelVersion>4.0.0</modelVersion>
-    <groupId>io.radanalytics.tests</groupId>
-    <artifactId>xpaas</artifactId>
-    <version>3.1.0-SNAPSHOT</version>
-    <packaging>pom</packaging>
-    <name>radtests</name>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>io.radanalytics.tests</groupId>
+  <artifactId>xpaas</artifactId>
+  <version>3.1.0-SNAPSHOT</version>
+  <packaging>pom</packaging>
+  <name>radtests</name>
 
-    <modules>
-        <module>utilities</module>
-    </modules>
+  <modules>
+    <module>utilities</module>
+  </modules>
 
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <aspectj.version>1.8.13</aspectj.version>
-        <fabric8.version>2.2.0.redhat-079</fabric8.version>
-        <version.org.slf4j>1.7.20</version.org.slf4j>
-        <version.selenium>2.52.0</version.selenium>
-        <version.io.fabric8.openshift-client>3.1.0</version.io.fabric8.openshift-client>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <aspectj.version>1.8.13</aspectj.version>
+    <fabric8.version>2.2.0.redhat-079</fabric8.version>
+    <version.org.slf4j>1.7.20</version.org.slf4j>
+    <version.selenium>2.52.0</version.selenium>
+    <version.io.fabric8.openshift-client>3.1.0</version.io.fabric8.openshift-client>
+    <kafka.host>0.0.0.0</kafka.host>
+    <kafka.port>9092</kafka.port>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
 
-    <dependencyManagement>
-        <dependencies>
-            <!-- Project versions -->
+  <dependencyManagement>
+    <dependencies>
+      <!-- Project versions -->
+      <dependency>
+        <groupId>com.redhat.xpaas</groupId>
+        <artifactId>utilities</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.redhat.xpaas</groupId>
+        <artifactId>test-common</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
+      <!-- Utilities dependencies -->
+      <dependency>
+        <groupId>io.fabric8</groupId>
+        <artifactId>openshift-client</artifactId>
+        <version>${version.io.fabric8.openshift-client}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>io.fabric8</groupId>
+        <artifactId>kubernetes-client</artifactId>
+        <version>${version.io.fabric8.openshift-client}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>io.fabric8</groupId>
+        <artifactId>kubernetes-model</artifactId>
+        <version>2.0.4</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.httpcomponents</groupId>
+        <artifactId>httpclient</artifactId>
+        <version>4.3.6</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.httpcomponents</groupId>
+        <artifactId>httpcore</artifactId>
+        <version>4.3.3</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-lang3</artifactId>
+        <version>3.4</version>
+      </dependency>
+
+      <dependency>
+        <groupId>commons-io</groupId>
+        <artifactId>commons-io</artifactId>
+        <version>2.4</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.reflections</groupId>
+        <artifactId>reflections</artifactId>
+        <version>0.9.10</version>
+      </dependency>
+
+      <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>4.12</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.assertj</groupId>
+        <artifactId>assertj-core</artifactId>
+        <version>3.5.2</version>
+      </dependency>
+
+      <!-- Logging versions -->
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-api</artifactId>
+        <version>${version.org.slf4j}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>log4j-over-slf4j</artifactId>
+        <version>${version.org.slf4j}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-jdk14</artifactId>
+        <version>${version.org.slf4j}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.logging.log4j</groupId>
+        <artifactId>log4j-to-slf4j</artifactId>
+        <version>2.3</version>
+      </dependency>
+
+      <dependency>
+        <groupId>ch.qos.logback</groupId>
+        <artifactId>logback-classic</artifactId>
+        <version>1.2.3</version>
+        <scope>runtime</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>net.logstash.logback</groupId>
+        <artifactId>logstash-logback-encoder</artifactId>
+        <version>4.11</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.github.danielwegener</groupId>
+        <artifactId>logback-kafka-appender</artifactId>
+        <version>0.2.0-RC1</version>
+        <scope>runtime</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>org.codehaus.janino</groupId>
+        <artifactId>janino</artifactId>
+        <version>3.0.6</version>
+      </dependency>
+
+      <!-- Selenium -->
+      <dependency>
+        <groupId>org.seleniumhq.selenium</groupId>
+        <artifactId>selenium-java</artifactId>
+        <version>${version.selenium}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.seleniumhq.selenium</groupId>
+        <artifactId>selenium-remote-driver</artifactId>
+        <version>${version.selenium}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.seleniumhq.selenium</groupId>
+        <artifactId>selenium-support</artifactId>
+        <version>${version.selenium}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.seleniumhq.selenium</groupId>
+        <artifactId>selenium-api</artifactId>
+        <version>${version.selenium}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.seleniumhq.selenium</groupId>
+        <artifactId>selenium-chrome-driver</artifactId>
+        <version>${version.selenium}</version>
+      </dependency>
+
+      <!-- Aspect Oriented deps -->
+      <dependency>
+        <groupId>org.aspectj</groupId>
+        <artifactId>aspectjrt</artifactId>
+        <version>${aspectj.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.aspectj</groupId>
+        <artifactId>aspectjtools</artifactId>
+        <version>${aspectj.version}</version>
+      </dependency>
+
+      <!-- Misc -->
+      <dependency>
+        <groupId>org.json</groupId>
+        <artifactId>json</artifactId>
+        <version>20171018</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>3.5.1</version>
+          <configuration>
+            <source>1.8</source>
+            <target>1.8</target>
+            <useIncrementalCompilation>false</useIncrementalCompilation>
+          </configuration>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>2.18.1</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-clean-plugin</artifactId>
+          <version>2.6.1</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-checkstyle-plugin</artifactId>
+          <version>2.17</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>aspectj-maven-plugin</artifactId>
+          <version>1.11</version>
+          <configuration>
+            <complianceLevel>1.8</complianceLevel>
+            <source>1.8</source>
+            <target>1.8</target>
+            <verbose>false</verbose>
+          </configuration>
+          <executions>
+            <execution>
+              <phase>process-sources</phase>
+              <goals>
+                <goal>compile</goal>       <!-- use this goal to weave all your main classes -->
+                <goal>test-compile</goal>  <!-- use this goal to weave all your test classes -->
+              </goals>
+            </execution>
+          </executions>
+          <dependencies>
             <dependency>
-                <groupId>com.redhat.xpaas</groupId>
-                <artifactId>utilities</artifactId>
-                <version>${project.version}</version>
+              <groupId>org.aspectj</groupId>
+              <artifactId>aspectjtools</artifactId>
+              <version>${aspectj.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>com.redhat.xpaas</groupId>
-                <artifactId>test-common</artifactId>
-                <version>${project.version}</version>
+              <groupId>org.aspectj</groupId>
+              <artifactId>aspectjweaver</artifactId>
+              <version>${aspectj.version}</version>
             </dependency>
+          </dependencies>
+        </plugin>
+      </plugins>
+    </pluginManagement>
 
-            <!-- Utilities dependencies -->
-            <dependency>
-                <groupId>io.fabric8</groupId>
-                <artifactId>openshift-client</artifactId>
-                <version>${version.io.fabric8.openshift-client}</version>
-            </dependency>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <source>1.8</source>
+          <target>1.8</target>
+        </configuration>
+      </plugin>
 
-            <dependency>
-                <groupId>io.fabric8</groupId>
-                <artifactId>kubernetes-client</artifactId>
-                <version>${version.io.fabric8.openshift-client}</version>
-            </dependency>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-clean-plugin</artifactId>
+        <configuration>
+          <filesets>
+            <fileset>
+              <directory>log</directory>
+              <includes>
+                <include>**</include>
+              </includes>
+            </fileset>
+            <fileset>
+              <directory>tmp</directory>
+              <includes>
+                <include>**</include>
+              </includes>
+            </fileset>
+          </filesets>
+        </configuration>
+      </plugin>
 
-            <dependency>
-                <groupId>io.fabric8</groupId>
-                <artifactId>kubernetes-model</artifactId>
-                <version>2.0.4</version>
-            </dependency>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <configuration>
+          <configLocation>checkstyle.xml</configLocation>
+        </configuration>
+      </plugin>
 
-            <dependency>
-                <groupId>org.apache.httpcomponents</groupId>
-                <artifactId>httpclient</artifactId>
-                <version>4.3.6</version>
-            </dependency>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>3.0.2</version>
+        <executions>
+          <execution>
+            <id>analyze</id>
+            <goals>
+              <goal>analyze-only</goal>
+            </goals>
+            <phase> process-test-classes</phase>
+            <configuration>
+              <failOnWarning>false</failOnWarning>
+              <ignoredUnusedDeclaredDependencies>
+                <ignoredUnusedDeclaredDependency>ch.qos.logback:logback-classic</ignoredUnusedDeclaredDependency>
+                <ignoredUnusedDeclaredDependency>net.logstash.logback:logstash-logback-encoder</ignoredUnusedDeclaredDependency>
+                <ignoredUnusedDeclaredDependency>com.github.danielwegener:logback-kafka-appender</ignoredUnusedDeclaredDependency>
+                <ignoredUnusedDeclaredDependency>org.codehaus.janino:janino</ignoredUnusedDeclaredDependency>
+              </ignoredUnusedDeclaredDependencies>
+              <verbose>true</verbose>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 
-            <dependency>
-                <groupId>org.apache.httpcomponents</groupId>
-                <artifactId>httpcore</artifactId>
-                <version>4.3.3</version>
-            </dependency>
+  <profiles>
+    <profile>
+      <id>test-all</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <modules>
+        <module>test-ophicleide</module>
+        <module>test-jgrafzahl</module>
+        <module>test-tensorflow-mnist</module>
+        <module>test-amqp</module>
+        <module>test-valueatrisk</module>
+        <module>test-pysparkhdfs</module>
+        <module>test-cephsource</module>
+        <module>test-s3source</module>
+        <module>test-blockchainanalysis</module>
+        <module>test-winemap</module>
+      </modules>
+    </profile>
 
-            <dependency>
-                <groupId>org.apache.commons</groupId>
-                <artifactId>commons-lang3</artifactId>
-                <version>3.4</version>
-            </dependency>
+    <profile>
+      <id>test-ophicleide</id>
+      <modules>
+        <module>test-ophicleide</module>
+      </modules>
+    </profile>
 
-            <dependency>
-                <groupId>commons-io</groupId>
-                <artifactId>commons-io</artifactId>
-                <version>2.4</version>
-            </dependency>
+    <profile>
+      <id>test-valueatrisk</id>
+      <modules>
+        <module>test-valueatrisk</module>
+      </modules>
+    </profile>
 
-            <!-- Simplified reflection: https://github.com/ronmamo/reflections -->
-            <dependency>
-                <groupId>org.reflections</groupId>
-                <artifactId>reflections</artifactId>
-                <version>0.9.10</version>
-            </dependency>
+    <profile>
+      <id>test-jgrafzahl</id>
+      <modules>
+        <module>test-jgrafzahl</module>
+      </modules>
+    </profile>
 
-            <dependency>
-                <groupId>junit</groupId>
-                <artifactId>junit</artifactId>
-                <version>4.12</version>
-            </dependency>
+    <profile>
+      <id>test-tensorflow-mnist</id>
+      <modules>
+        <module>test-tensorflow-mnist</module>
+      </modules>
+    </profile>
 
-            <dependency>
-                <groupId>org.assertj</groupId>
-                <artifactId>assertj-core</artifactId>
-                <version>3.5.2</version>
-            </dependency>
+    <profile>
+      <id>test-amqp</id>
+      <modules>
+        <module>test-amqp</module>
+      </modules>
+    </profile>
 
-            <!-- Logging versions -->
-            <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-api</artifactId>
-                <version>${version.org.slf4j}</version>
-            </dependency>
+    <profile>
+      <id>test-pysparkhdfs</id>
+      <modules>
+        <module>test-pysparkhdfs</module>
+      </modules>
+    </profile>
 
-            <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>log4j-over-slf4j</artifactId>
-                <version>${version.org.slf4j}</version>
-            </dependency>
+    <profile>
+      <id>test-cephsource</id>
+      <modules>
+        <module>test-cephsource</module>
+      </modules>
+    </profile>
 
-            <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-jdk14</artifactId>
-                <version>${version.org.slf4j}</version>
-            </dependency>
+    <profile>
+      <id>test-s3source</id>
+      <modules>
+        <module>test-s3source</module>
+      </modules>
+    </profile>
 
-            <dependency>
-                <groupId>org.apache.logging.log4j</groupId>
-                <artifactId>log4j-to-slf4j</artifactId>
-                <version>2.3</version>
-            </dependency>
+    <profile>
+      <id>test-blockchainanalysis</id>
+      <modules>
+        <module>test-blockchainanalysis</module>
+      </modules>
+    </profile>
 
-            <dependency>
-                <groupId>ch.qos.logback</groupId>
-                <artifactId>logback-classic</artifactId>
-                <version>1.1.3</version>
-            </dependency>
-
-            <!-- Selenium -->
-            <dependency>
-                <groupId>org.seleniumhq.selenium</groupId>
-                <artifactId>selenium-java</artifactId>
-                <version>${version.selenium}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.seleniumhq.selenium</groupId>
-                <artifactId>selenium-remote-driver</artifactId>
-                <version>${version.selenium}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.seleniumhq.selenium</groupId>
-                <artifactId>selenium-support</artifactId>
-                <version>${version.selenium}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.seleniumhq.selenium</groupId>
-                <artifactId>selenium-api</artifactId>
-                <version>${version.selenium}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.seleniumhq.selenium</groupId>
-                <artifactId>selenium-chrome-driver</artifactId>
-                <version>${version.selenium}</version>
-            </dependency>
-
-            <!-- Aspect Oriented deps -->
-            <dependency>
-                <groupId>org.aspectj</groupId>
-                <artifactId>aspectjrt</artifactId>
-                <version>${aspectj.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.aspectj</groupId>
-                <artifactId>aspectjtools</artifactId>
-                <version>${aspectj.version}</version>
-            </dependency>
-
-            <!-- Misc -->
-            <dependency>
-                <groupId>org.json</groupId>
-                <artifactId>json</artifactId>
-                <version>20171018</version>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
-
-    <build>
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.5.1</version>
-                    <configuration>
-                        <source>1.8</source>
-                        <target>1.8</target>
-                        <useIncrementalCompilation>false</useIncrementalCompilation>
-                    </configuration>
-                </plugin>
-
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-surefire-plugin</artifactId>
-                    <version>2.18.1</version>
-                </plugin>
-
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-clean-plugin</artifactId>
-                    <version>2.6.1</version>
-                </plugin>
-
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-checkstyle-plugin</artifactId>
-                    <version>2.17</version>
-                </plugin>
-
-                <plugin>
-                    <groupId>org.codehaus.mojo</groupId>
-                    <artifactId>aspectj-maven-plugin</artifactId>
-                    <version>1.11</version>
-                    <configuration>
-                        <complianceLevel>1.8</complianceLevel>
-                        <source>1.8</source>
-                        <target>1.8</target>
-                        <verbose>false</verbose>
-                    </configuration>
-                    <executions>
-                        <execution>
-                            <phase>process-sources</phase>
-                            <goals>
-                                <goal>compile</goal>       <!-- use this goal to weave all your main classes -->
-                                <goal>test-compile</goal>  <!-- use this goal to weave all your test classes -->
-                            </goals>
-                        </execution>
-                    </executions>
-                    <dependencies>
-                        <dependency>
-                            <groupId>org.aspectj</groupId>
-                            <artifactId>aspectjtools</artifactId>
-                            <version>${aspectj.version}</version>
-                        </dependency>
-
-                        <dependency>
-                            <groupId>org.aspectj</groupId>
-                            <artifactId>aspectjweaver</artifactId>
-                            <version>${aspectj.version}</version>
-                        </dependency>
-                    </dependencies>
-                </plugin>
-            </plugins>
-        </pluginManagement>
-
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
-                </configuration>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-clean-plugin</artifactId>
-                <configuration>
-                    <filesets>
-                        <fileset>
-                            <directory>log</directory>
-                            <includes>
-                                <include>**</include>
-                            </includes>
-                        </fileset>
-                        <fileset>
-                            <directory>tmp</directory>
-                            <includes>
-                                <include>**</include>
-                            </includes>
-                        </fileset>
-                    </filesets>
-                </configuration>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-checkstyle-plugin</artifactId>
-                <configuration>
-                    <configLocation>checkstyle.xml</configLocation>
-                </configuration>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <version>3.0.2</version>
-                <executions>
-                    <execution>
-                        <id>analyze</id>
-                        <goals>
-                            <goal>analyze-only</goal>
-                        </goals>
-                        <phase> process-test-classes</phase>
-                        <configuration>
-                            <failOnWarning>true</failOnWarning>
-                            <ignoredUnusedDeclaredDependencies>
-                                <ignoredUnusedDeclaredDependency>
-                                    ch.qos.logback:logback-classic
-                                </ignoredUnusedDeclaredDependency>
-                            </ignoredUnusedDeclaredDependencies>
-                            <verbose>true</verbose>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
-
-    <profiles>
-        <profile>
-            <id>test-all</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <modules>
-                <module>test-ophicleide</module>
-                <module>test-jgrafzahl</module>
-                <module>test-tensorflow-mnist</module>
-                <module>test-amqp</module>
-                <module>test-valueatrisk</module>
-                <module>test-pysparkhdfs</module>
-                <module>test-cephsource</module>
-                <module>test-s3source</module>
-                <module>test-blockchainanalysis</module>
-            </modules>
-        </profile>
-
-        <profile>
-            <id>test-ophicleide</id>
-            <modules>
-                <module>test-ophicleide</module>
-            </modules>
-        </profile>
-
-        <profile>
-            <id>test-valueatrisk</id>
-            <modules>
-                <module>test-valueatrisk</module>
-            </modules>
-        </profile>
-
-        <profile>
-            <id>test-jgrafzahl</id>
-            <modules>
-                <module>test-jgrafzahl</module>
-            </modules>
-        </profile>
-
-        <profile>
-            <id>test-tensorflow-mnist</id>
-            <modules>
-                <module>test-tensorflow-mnist</module>
-            </modules>
-        </profile>
-
-        <profile>
-            <id>test-amqp</id>
-            <modules>
-                <module>test-amqp</module>
-            </modules>
-        </profile>
-
-        <profile>
-            <id>test-pysparkhdfs</id>
-            <modules>
-                <module>test-pysparkhdfs</module>
-            </modules>
-        </profile>
-
-        <profile>
-            <id>test-cephsource</id>
-            <modules>
-                <module>test-cephsource</module>
-            </modules>
-        </profile>
-
-        <profile>
-            <id>test-s3source</id>
-            <modules>
-                <module>test-s3source</module>
-            </modules>
-        </profile>
-
-        <profile>
-            <id>test-blockchainanalysis</id>
-            <modules>
-                <module>test-blockchainanalysis</module>
-            </modules>
-        </profile>
-    </profiles>
+    <profile>
+      <id>test-winemap</id>
+      <modules>
+        <module>test-winemap</module>
+      </modules>
+    </profile>
+  </profiles>
 </project>

@@ -1,12 +1,12 @@
 package com.redhat.xpaas.oshinko.deployment;
 
-import com.redhat.xpaas.logger.Loggable;
 import com.redhat.xpaas.logger.LoggerUtil;
 import com.redhat.xpaas.openshift.OpenshiftUtil;
 import com.redhat.xpaas.oshinko.api.OshinkoWebUI;
 import com.redhat.xpaas.RadConfiguration;
 import com.redhat.xpaas.wait.WaitUtil;
 import io.fabric8.kubernetes.api.model.*;
+import io.fabric8.openshift.api.model.DeploymentConfig;
 import io.fabric8.openshift.api.model.Template;
 
 import java.util.HashMap;
@@ -15,7 +15,6 @@ import java.util.concurrent.TimeoutException;
 import java.util.function.BooleanSupplier;
 import java.util.function.Predicate;
 
-@Loggable(project = "oshinko")
 public class Oshinko {
   private static final OpenshiftUtil openshift = OpenshiftUtil.getInstance();
   private static final String APP_NAME = RadConfiguration.oshinkoAppName();
@@ -165,6 +164,24 @@ public class Oshinko {
     parameters.put("APP_ARGS", appArgs);
     parameters.put("SPARK_OPTIONS", sparkOptions);
 
+    openshift.loadTemplate(PySpark, parameters);
+  }
+
+  public static void deployPySparkSpark(String appName, String gitURI, String appArgs, String sparkOptions, Map<String, String> environmentVars){
+    Map<String, String> parameters = new HashMap<>();
+    parameters.put("APPLICATION_NAME", appName);
+    parameters.put("GIT_URI", gitURI);
+    parameters.put("APP_ARGS", appArgs);
+    parameters.put("SPARK_OPTIONS", sparkOptions);
+
+    PySpark= openshift.withAdminUser(client ->
+      client.templates().load(Oshinko.class.getResourceAsStream(PYSPARK_TEMPLATE)).get()
+    );
+
+    DeploymentConfig dc = openshift.getOnlyDeploymentConfigFromTemplate(PySpark);
+    Container container = openshift.getContainer(0, dc); // get first and only container in template
+    openshift.addEnvVarsToContainer(environmentVars, container);
+    openshift.withAdminUser(client -> client.inNamespace(NAMESPACE).templates().create(PySpark));
     openshift.loadTemplate(PySpark, parameters);
   }
 

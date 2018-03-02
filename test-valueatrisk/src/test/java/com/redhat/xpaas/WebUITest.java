@@ -37,17 +37,17 @@ public class WebUITest {
 
   @Test
   public void testBBasicSetup(){
-    Assertions.assertThat(ValueAtRisk.getNthCodeCell(1).runCell().outputHasErrors()).isFalse();
+    assertCodeCell(1);
   }
 
   @Test
   public void testCLoadingData(){
-    Assertions.assertThat(ValueAtRisk.getNthCodeCell(2).runCell().outputHasErrors()).isFalse();
+    assertCodeCell(2);
   }
 
   @Test
   public void testDCalculatingHistoricalReturns(){
-    Assertions.assertThat(ValueAtRisk.getNthCodeCell(3).runCell().outputHasErrors()).isFalse();
+    assertCodeCell(3);
   }
 
   @Test
@@ -57,7 +57,7 @@ public class WebUITest {
 
   @Test
   public void testFGetSecurityPrices(){
-    Assertions.assertThat(ValueAtRisk.getNthCodeCell(6).runCell().outputHasErrors()).isFalse();
+    assertCodeCell(6);
   }
 
   @Test
@@ -75,12 +75,20 @@ public class WebUITest {
     assertCodeCellRange(18, 24);
   }
 
-  private void assertCodeCellRange(int start, int end){
-    for(int n = start; n <= end; n++){
-      Assertions.assertThat(ValueAtRisk.getNthCodeCell(n).runCell().outputHasErrors()).isFalse();
-    }
+  private void assertCodeCell(int cellIndex){
+    assertCodeCellRange(cellIndex, cellIndex);
   }
 
-
+  private void assertCodeCellRange(int start, int end){
+    boolean outputHasErrors;
+    for(int n = start; n <= end; n++){
+      try {
+        outputHasErrors = ValueAtRisk.getNthCodeCell(n).runCell().outputHasErrors();
+        Assertions.assertThat(outputHasErrors).as("Check output status of cell %s", n).isFalse();
+      } catch (AssertionError e) {
+        Assertions.assertThat(e).hasMessage(String.format("Expected:<false> but was <%s>. With outputmessage: %s", false,ValueAtRisk.getNthCodeCell(n).runCell().getOutput()));
+      }
+    }
+  }
 }
 

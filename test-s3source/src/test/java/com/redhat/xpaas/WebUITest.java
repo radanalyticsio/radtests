@@ -16,6 +16,9 @@ public class WebUITest {
   private static S3SourceWebUI S3Source;
   private static final OpenshiftUtil openshift = OpenshiftUtil.getInstance();
 
+  public static boolean p(){
+    return false;
+  }
   @BeforeClass
   public static void setUp() throws TimeoutException, InterruptedException {
     Setup setup = new Setup();
@@ -56,8 +59,15 @@ public class WebUITest {
   }
 
   private void assertCodeCellRange(int start, int end){
+    boolean outputHasErrors;
     for(int n = start; n <= end; n++){
-      Assertions.assertThat(S3Source.getNthCodeCell(n).runCell().outputHasErrors()).isFalse();
+      try {
+        outputHasErrors = S3Source.getNthCodeCell(n).runCell().outputHasErrors();
+        Assertions.assertThat(outputHasErrors).as("Check output status of cell %s", n).isFalse();
+      } catch (AssertionError e) {
+        Assertions.assertThat(e).hasMessage(String.format("Expected:<false> but was <%s>. With outputmessage: %s",
+          false, S3Source.getNthCodeCell(n).runCell().getOutput()));
+      }
     }
   }
 

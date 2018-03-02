@@ -9,7 +9,7 @@
   </parent>
 
   <groupId>com.redhat.xpaas</groupId>
-  <artifactId>test-blockchainanalysis</artifactId>
+  <artifactId>test-winemap</artifactId>
   <name>xPaaS Test Suite :: RAD test suite</name>
 
   <properties>
@@ -62,6 +62,11 @@
       <groupId>org.seleniumhq.selenium</groupId>
       <artifactId>selenium-api</artifactId>
     </dependency>
+
+    <!--<dependency>-->
+      <!--<groupId>org.seleniumhq.selenium</groupId>-->
+      <!--<artifactId>selenium-support</artifactId>-->
+    <!--</dependency>-->
 
     <dependency>
       <groupId>com.github.danielwegener</groupId>

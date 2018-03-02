@@ -23,9 +23,6 @@ public class SparkNotebookWebUI implements SparkNotebookAPI {
   }
 
   @Override
-  public void login(String password) {}
-
-  @Override
   public void loadProjectByURL(String projectName) {
     String url = "http://" + HOSTNAME + "/notebooks/" + projectName;
     webDriver.get(url);

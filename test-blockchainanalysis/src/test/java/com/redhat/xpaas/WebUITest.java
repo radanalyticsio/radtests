@@ -4,6 +4,7 @@ import com.redhat.xpaas.logger.Loggable;
 import com.redhat.xpaas.openshift.OpenshiftUtil;
 import com.redhat.xpaas.rad.BlockChainAnalysis.api.BlockChainAnalysisSparkWebUI;
 import com.redhat.xpaas.rad.BlockChainAnalysis.api.BlockChainAnalysisWebUI;
+import com.redhat.xpaas.sparknotebook.entity.CodeCell;
 import com.redhat.xpaas.util.Tuple;
 import org.assertj.core.api.Assertions;
 import org.junit.*;
@@ -25,6 +26,7 @@ public class WebUITest {
     Tuple<BlockChainAnalysisWebUI, BlockChainAnalysisSparkWebUI> blockchainNoteBooks = setup.initializeApplications();
     BlockChainAnalysis = blockchainNoteBooks.getFirst();
     BlockChainAnalysisSpark = blockchainNoteBooks.getSecond();
+
     BlockChainAnalysis.loadProjectByURL("blockchain.ipynb");
     BlockChainAnalysisSpark.loadProjectByURL("blockchain.snb.ipynb");
   }
@@ -44,12 +46,12 @@ public class WebUITest {
 
   @Test
   public void testBJupyterNotebookVideoDisplay(){
-    Assertions.assertThat(BlockChainAnalysis.getNthCodeCell(1).runCell().outputHasErrors()).isFalse();
+    assertCodeCell(1);
   }
 
   @Test
   public void testCJupyterNotebookBasicSetup(){
-    Assertions.assertThat(BlockChainAnalysis.getNthCodeCell(2).runCell().outputHasErrors()).isFalse();
+    assertCodeCell(2);
   }
 
   @Test
@@ -59,7 +61,7 @@ public class WebUITest {
 
   @Test
   public void testEJupyterNotebookDataCleansing(){
-    Assertions.assertThat(BlockChainAnalysis.getNthCodeCell(7).runCell().outputHasErrors()).isFalse();
+    assertCodeCell(7);
   }
 
   @Test
@@ -74,7 +76,7 @@ public class WebUITest {
 
   @Test
   public void testHSparkNotebookBasicSetup(){
-    Assertions.assertThat(BlockChainAnalysisSpark.getNthCodeCell(1).runCell().outputHasErrors()).isFalse();
+    assertCodeCellSpark(1);
   }
 
   @Test
@@ -84,12 +86,12 @@ public class WebUITest {
 
   @Test
   public void testJSparkNotebookLoadTheData(){
-    Assertions.assertThat(BlockChainAnalysisSpark.getNthCodeCell(4).runCell().outputHasErrors()).isFalse();
+    assertCodeCellSpark(4);
   }
 
   @Test
   public void testKSparkNotebookNumberOfVertices(){
-    Assertions.assertThat(BlockChainAnalysisSpark.getNthCodeCell(5).runCell().outputHasErrors()).isFalse();
+    assertCodeCellSpark(5);
   }
 
   @Test
@@ -100,7 +102,7 @@ public class WebUITest {
 
   @Test
   public void testMSparkNotebookNumberOfEdges(){
-    Assertions.assertThat(BlockChainAnalysisSpark.getNthCodeCell(8).runCell().outputHasErrors()).isFalse();
+    assertCodeCellSpark(8);
   }
 
   @Test
@@ -118,17 +120,42 @@ public class WebUITest {
     assertCodeCellRangeSpark(14, 17);
   }
 
+  private void assertCodeCell(int cellIndex){
+    assertCodeCellRange(cellIndex, cellIndex);
+  }
+
   private void assertCodeCellRange(int start, int end){
+    boolean outputHasErrors;
+    com.redhat.xpaas.jupyter.entity.CodeCell cell;
     for(int n = start; n <= end; n++){
-      Assertions.assertThat(BlockChainAnalysis.getNthCodeCell(n).runCell().outputHasErrors()).isFalse();
+      cell = BlockChainAnalysis.getNthCodeCell(n);
+      try {
+        outputHasErrors = cell.runCell().outputHasErrors();
+        Assertions.assertThat(outputHasErrors).as("Check output status of cell %s", n).isFalse();
+      } catch (AssertionError e) {
+        Assertions.assertThat(e).hasMessage(String.format("Expected:<false> but was <%s>. With outputmessage: %s",
+          true, cell.getOutput()));
+      }
     }
+  }
+
+  private void assertCodeCellSpark(int cellIndex){
+    assertCodeCellRangeSpark(cellIndex, cellIndex);
   }
 
   private void assertCodeCellRangeSpark(int start, int end){
+    boolean outputHasErrors;
+    CodeCell cell;
     for(int n = start; n <= end; n++){
-      Assertions.assertThat(BlockChainAnalysisSpark.getNthCodeCell(n).runCell().outputHasErrors()).isFalse();
+      cell = BlockChainAnalysisSpark.getNthCodeCell(n);
+      try {
+        outputHasErrors = cell.runCell().outputHasErrors();
+        Assertions.assertThat(outputHasErrors).as("Check output status of cell %s", n).isFalse();
+      } catch (AssertionError e) {
+        Assertions.assertThat(e).hasMessage(String.format("Expected:<false> but was <%s>. With outputmessage: %s",
+          true, cell.getOutput()));
+      }
     }
   }
-
 }
 

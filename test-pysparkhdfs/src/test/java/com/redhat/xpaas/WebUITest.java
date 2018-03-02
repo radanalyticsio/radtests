@@ -42,7 +42,7 @@ public class WebUITest {
   @Test
   public void testBConnectSparkCluster(){
     PySparkHDFS.getNthCodeCell(1).findAndReplaceInCell("spark://mycluster:7077", SPARK_MASTER_URL);
-    Assertions.assertThat(PySparkHDFS.getNthCodeCell(1).runCell().outputHasErrors()).isFalse();
+    assertCodeCell(1);
   }
 
   @Test
@@ -51,13 +51,23 @@ public class WebUITest {
     PySparkHDFS.getNthCodeCell(2).findAndReplaceInCell("8020", HDFS_PORT);
     PySparkHDFS.getNthCodeCell(2).findAndReplaceInCell("/user/me/input", HDFS_PATH);
 
-    Assertions.assertThat(PySparkHDFS.getNthCodeCell(2).runCell().outputHasErrors()).isFalse();
+    assertCodeCell(2);
   }
 
   @Test
   public void testCReadFileAndPrintCounts(){
-    Assertions.assertThat(PySparkHDFS.getNthCodeCell(3).runCell().outputHasErrors()).isFalse();
+    assertCodeCell(3);
   }
 
+  private void assertCodeCell(int cellIndex){
+    boolean outputHasErrors;
+    try {
+      outputHasErrors = PySparkHDFS.getNthCodeCell(cellIndex).runCell().outputHasErrors();
+      Assertions.assertThat(outputHasErrors).as("Check output status of cell %s", cellIndex).isFalse();
+    } catch (AssertionError e) {
+      Assertions.assertThat(e).hasMessage(String.format("Expected:<false> but was <%s>. With outputmessage: %s",
+        false, PySparkHDFS.getNthCodeCell(cellIndex).runCell().getOutput()));
+    }
+  }
 }
 
