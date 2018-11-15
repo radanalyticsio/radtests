@@ -18,7 +18,7 @@
     <fabric8.version>2.2.0.redhat-079</fabric8.version>
     <version.org.slf4j>1.7.20</version.org.slf4j>
     <version.selenium>2.52.0</version.selenium>
-    <version.io.fabric8.openshift-client>3.1.0</version.io.fabric8.openshift-client>
+    <version.io.fabric8.openshift-client>4.0.7</version.io.fabric8.openshift-client>
     <kafka.host>0.0.0.0</kafka.host>
     <kafka.port>9092</kafka.port>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
